@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <link rel="stylesheet" href="style.css">
+  <title>SCREENSHOT - Editor</title>
+</head>
+<body class="editor">
+  <header class="toolbar">
+    <div class="editor-brand"><span class="editor-mark" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/><path d="M8 8h8v8H8z"/></svg></span><div><strong>SCREENSHOT</strong><small>Bild bearbeiten · lokal</small></div></div>
+    <div class="toolbar-actions"><button id="window" hidden>Fenster auswählen</button><button id="copy" aria-label="In Zwischenablage kopieren" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span>Kopieren</span></button><button id="save" class="primary" aria-label="PNG speichern" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg><span>PNG speichern</span></button></div>
+  </header>
+  <div class="workspace-toolbar">
+    <div class="edit-controls" role="toolbar" aria-label="Bild bearbeiten">
+      <div class="tool-group" aria-label="Werkzeuge">
+        <button class="tool active" data-tool="pan" aria-label="Hand" aria-pressed="true" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V7a2 2 0 0 1 4 0v3-5a2 2 0 0 1 4 0v5-2a2 2 0 0 1 4 0v6c0 4-2 7-6 7h-2c-2 0-4-1-5-3l-3-4a2 2 0 0 1 3-2z"/></svg><span>Hand</span></button>
+        <button class="tool" data-tool="select" aria-label="Auswählen und Verschieben" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 3 13 9-7 1-3 7z"/></svg><span>Auswahl</span></button>
+        <button class="tool" data-tool="crop" aria-label="Zuschneiden" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3v13a2 2 0 0 0 2 2h13M3 6h13a2 2 0 0 1 2 2v13"/></svg><span>Zuschneiden</span></button>
+        <button class="tool" data-tool="rect" aria-label="Rechteck" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/></svg><span>Rechteck</span></button>
+        <button class="tool" data-tool="arrow" aria-label="Pfeil" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 19 5M10 5h9v9"/></svg><span>Pfeil</span></button>
+        <button class="tool" data-tool="pen" aria-label="Stift" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1 11-11a2 2 0 0 0-3-3L5 16l-1 4Z"/></svg><span>Stift</span></button>
+        <button class="tool" data-tool="text" aria-label="Text" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M12 6v14M8 20h8M4 10V6m16 4V6"/></svg><span>Text</span></button>
+        <button class="tool" data-tool="blur" aria-label="Weichzeichnen" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3" stroke-dasharray="2 3"/><circle cx="12" cy="12" r="3"/></svg><span>Weichzeichnen</span></button>
+        <button class="tool" data-tool="pixelate" aria-label="Pixelieren" aria-pressed="false" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/></svg><span>Pixelieren</span></button>
+      </div>
+      <div class="tool-group properties">
+        <label class="color-choice" title="Annotationsfarbe"><span>Farbe</span><input id="edit-color" type="color" value="#e05263" aria-label="Annotationsfarbe"></label>
+        <label class="stroke-choice" title="Strichstärke in Bildpixeln"><span>Stärke</span><select id="edit-width" aria-label="Strichstärke"><option value="2">2 px</option><option value="4" selected>4 px</option><option value="8">8 px</option><option value="12">12 px</option></select></label>
+      </div>
+      <div class="tool-group object-actions"><button id="edit-object" title="Ausgewählten Text bearbeiten" aria-label="Text bearbeiten" disabled>Text ändern</button><button id="delete-object" title="Ausgewählte Annotation entfernen (Entf)" aria-label="Annotation entfernen" disabled>Entfernen</button></div>
+      <div class="tool-group history-actions">
+        <button id="undo" title="Rückgängig (Strg+Z)" aria-label="Rückgängig" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 1 1 0 12h-2"/></svg></button><button id="redo" title="Wiederholen (Strg+Y)" aria-label="Wiederholen" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5m5 5H10a6 6 0 1 0 0 12h2"/></svg></button><button id="reset-edit" title="Alle Bearbeitungen entfernen" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6l-3 3M3 3v6h6"/></svg><span>Original</span></button>
+      </div>
+    </div>
+    <div class="view-controls" aria-label="Bildansicht">
+      <div class="view-control-buttons"><button id="zoom-out" title="Verkleinern (-)" disabled aria-label="Verkleinern">−</button><output id="zoom-value" aria-live="off">100%</output><button id="zoom-in" title="Vergrössern (+)" disabled aria-label="Vergrössern">+</button><button id="fit" title="An Fenster anpassen (0)" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg><span>Anpassen</span></button><button id="actual" title="Originalgrösse (1)" disabled>1:1</button></div>
+      <span class="view-hint" id="view-hint">Mausrad: Zoom · Ziehen: Bewegen · Doppelklick: Anpassen</span>
+      <details class="shortcut-help"><summary aria-label="Tastenkürzel anzeigen">Tastenkürzel</summary><div class="shortcut-panel"><span><kbd>V</kbd> Hand</span><span><kbd>S</kbd> Auswahl</span><span><kbd>B</kbd> Weichzeichnen</span><span><kbd>I</kbd> Pixelieren</span><span><kbd>Del</kbd> Entfernen</span><span><kbd>C</kbd> Zuschneiden</span><span><kbd>R</kbd> Rechteck</span><span><kbd>A</kbd> Pfeil</span><span><kbd>P</kbd> Stift</span><span><kbd>T</kbd> Text</span><span><kbd>Ctrl</kbd> + <kbd>Z</kbd> Rückgängig</span><span><kbd>0</kbd> Anpassen</span><span><kbd>1</kbd> 100%</span><span><kbd>Esc</kbd> Hand</span></div></details>
+    </div>
+  </div>
+  <p class="notice" id="notice" role="status" aria-live="polite" aria-atomic="true">Bild wird geladen …</p>
+  <main class="stage" id="stage"><div class="image-viewport" id="viewport" tabindex="0" aria-label="Screenshot-Vorschau: Zoom mit Mausrad, Bewegung im Hand-Modus."><img id="preview" alt="Screenshot-Vorschau" draggable="false" hidden><canvas id="overlay" aria-hidden="true"></canvas></div></main>
+  <script type="module" src="editor.js"></script>
+</body>
+</html>

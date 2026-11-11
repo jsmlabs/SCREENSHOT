@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <link rel="stylesheet" href="style.css">
+  <title>SCREENSHOT</title>
+</head>
+<body class="popup">
+  <header class="popup-header">
+    <div class="brand"><span class="mark" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/><path d="M8 8h8v8H8z"/></svg></span><div><strong>SCREENSHOT</strong><small>Aufnehmen. Bearbeiten. Teilen.</small></div></div>
+    <span class="version" aria-label="Version 1.10.0">v1.10.0</span>
+  </header>
+  <main class="popup-content"><p class="popup-intro">Was möchtest du aufnehmen?</p>
+    <div class="section-heading"><span>NEUE AUFNAHME</span><span class="section-meta">PNG-Format</span></div>
+    <div class="capture-options" role="group" aria-label="Aufnahmemodus">
+      <button type="button" data-mode="area"><span class="glyph" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/><path d="M8 8h8v8H8z"/></svg></span><span class="option-text"><b>Bereich</b><small>Ausschnitt selbst markieren</small></span><span class="arrow" aria-hidden="true">›</span></button>
+      <button type="button" data-mode="element"><span class="glyph" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h6M4 4v6M20 4h-6m6 0v6M4 20h6m-6 0v-6m16 6h-6m6 0v-6"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></span><span class="option-text"><b>Element</b><small>Ein Element gezielt erfassen</small></span><span class="arrow" aria-hidden="true">›</span></button>
+      <button type="button" data-mode="visible"><span class="glyph" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></svg></span><span class="option-text"><b>Sichtbarer Tab</b><small>Alles, was gerade sichtbar ist</small></span><span class="arrow" aria-hidden="true">›</span></button>
+      <button type="button" data-mode="window"><span class="glyph" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M7 7h.01"/></svg></span><span class="option-text"><b>Fenster</b><small>Browserfenster erfassen</small></span><span class="arrow" aria-hidden="true">›</span></button>
+      <button type="button" data-mode="full"><span class="glyph" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6M9 10h6M9 14h6M9 18h4"/></svg></span><span class="option-text"><b>Ganze Seite</b><small>Auch ausserhalb des Bildschirms</small></span><span class="arrow" aria-hidden="true">›</span></button>
+    </div>
+    <div class="capture-settings">
+      <label class="timer-option" for="capture-timer"><span>Start nach</span><select id="capture-timer" aria-label="Aufnahmeverzögerung"><option value="0">Sofort</option><option value="3">3 Sekunden</option><option value="5">5 Sekunden</option><option value="10">10 Sekunden</option></select></label>
+      <div class="clipboard-feature" title="Nach der Aufnahme versucht SCREENSHOT, das PNG automatisch in die Zwischenablage zu kopieren. Falls Chrome das verhindert, kann es im Editor manuell kopiert werden."><span class="feature-icon" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span><span>Automatisch in die Zwischenablage</span></div>
+    </div>
+    <details class="productivity-panel" id="preferences-panel"><summary><span>Einstellungen <small>Speichern, Verlauf &amp; Kürzel</small></span><span class="panel-arrow" aria-hidden="true">⌄</span></summary>
+      <div class="productivity-fields">
+        <label class="setting-switch"><span>PNG zusätzlich herunterladen<small>Optional · wird im Download-Ordner gespeichert</small></span><input type="checkbox" id="auto-save"></label>
+        <label class="setting-row">Maximal im Verlauf<select id="history-limit" aria-label="Maximale Anzahl Aufnahmen"><option value="5">5 Aufnahmen</option><option value="10">10 Aufnahmen</option><option value="20">20 Aufnahmen</option></select></label>
+        <label class="setting-row">Verlauf aufbewahren<select id="history-days" aria-label="Verlauf aufbewahren"><option value="1">24 Stunden</option><option value="3">3 Tage</option><option value="7">7 Tage</option></select></label>
+        <div class="setting-row"><span>Tastenkombinationen</span><button type="button" class="inline-action" id="manage-shortcuts">In Chrome öffnen ↗</button></div>
+        <p class="settings-hint">Tastenkombinationen für Aufnahmen verwaltest du in Chrome.</p>
+      </div>
+    </details>
+    <section class="history-panel" aria-labelledby="history-title"><div class="section-heading history-heading"><span id="history-title">VERLAUF</span><button type="button" class="inline-action" id="clear-history" hidden>Verlauf löschen</button></div><div id="capture-history" class="history-list" aria-live="polite"><p class="empty-history">Deine letzten Aufnahmen erscheinen hier.</p></div></section>
+    <button id="cancel-capture" type="button" hidden><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg> Aufnahme abbrechen</button>
+    <p id="status" role="status" aria-live="polite" aria-atomic="true"></p>
+  </main>
+  <footer><span><span class="privacy-dot" aria-hidden="true"></span> Lokal verarbeitet</span><span>Ohne Cloud-Upload</span></footer>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
