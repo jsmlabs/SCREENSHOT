@@ -52,6 +52,7 @@ export function patchAnnotation(state,index,patch){
   if(typeof patch.color==='string' && /^#[0-9a-f]{6}$/i.test(patch.color))allowed.color=patch.color;
   if([2,4,8,12].includes(patch.width))allowed.width=patch.width;
   if(typeof patch.text==='string'&&patch.text.trim()&&patch.text.length<=200&&state.annotations[index].type==='text')allowed.text=patch.text;
+  if(Number.isInteger(patch.fontSize)&&patch.fontSize>=8&&patch.fontSize<=144&&state.annotations[index].type==='text')allowed.fontSize=patch.fontSize;
   return Object.keys(allowed).length?updateAnnotation(state,index,{...state.annotations[index],...allowed}):null;
 }
 export function validAnnotation(a){
@@ -61,4 +62,34 @@ export function validAnnotation(a){
   if(a.type==='text'&&(!String(a.text||'').trim()||String(a.text).length>200))return false;
   if(a.width!==undefined&&(!finite(a.width)||a.width<=0||a.width>100))return false;
   return true;
+}
+
+// Resize objects from their bottom-right selection handle. Source coordinates
+// remain independent from crop and viewport zoom.
+export function resizeAnnotation(annotation, bounds, next, minSize = 8) {
+  if (!annotation || !bounds || ![bounds.x,bounds.y,bounds.w,bounds.h,next?.x,next?.y].every(Number.isFinite)) return null;
+  if (bounds.w <= 0 || bounds.h <= 0 || !Number.isFinite(minSize) || minSize <= 0) return null;
+  const sx = Math.max(minSize / bounds.w, (next.x - bounds.x) / bounds.w);
+  const sy = Math.max(minSize / bounds.h, (next.y - bounds.y) / bounds.h);
+  if (![sx,sy].every(Number.isFinite) || sx > 100 || sy > 100) return null;
+  const map = (x,y) => ({x:bounds.x+(x-bounds.x)*sx,y:bounds.y+(y-bounds.y)*sy});
+  const a = {...annotation};
+  if (['rect','blur','pixelate'].includes(a.type)) {
+    const top=map(a.x,a.y);a.x=top.x;a.y=top.y;a.w*=sx;a.h*=sy;
+  } else if (a.type === 'arrow') {
+    const start=map(a.x,a.y),end=map(a.x2,a.y2);
+    a.x=start.x;a.y=start.y;a.x2=end.x;a.y2=end.y;
+  } else if (a.type === 'pen') {
+    a.points=a.points.map(point=>map(point.x,point.y));
+  } else if (a.type === 'text') {
+    // Uniform scale keeps glyphs legible and avoids distortions.
+    const factor=Math.min(sx,sy);
+    a.fontSize=Math.max(8,Math.min(144,Math.round((a.fontSize||22)*factor)));
+  } else return null;
+  return validAnnotation(a) ? a : null;
+}
+export function resizeObject(state,index,bounds,next) {
+  if (!Number.isInteger(index) || index < 0 || index >= state.annotations.length) return null;
+  const replacement=resizeAnnotation(state.annotations[index],bounds,next);
+  return replacement ? updateAnnotation(state,index,replacement) : null;
 }

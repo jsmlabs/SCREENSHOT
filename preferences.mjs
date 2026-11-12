@@ -1,6 +1,6 @@
 // Versioned local preferences. Images never leave the browser.
 export const SETTINGS_KEY = 'settings:v1';
-export const DEFAULT_SETTINGS = Object.freeze({timer:0,autoSave:false,historyLimit:10,historyDays:1,language:'auto'});
+export const DEFAULT_SETTINGS = Object.freeze({timer:0,autoSave:false,historyLimit:10,historyDays:1,language:'auto',exportPrefix:'screenshot',exportAskWhere:false});
 export function normalizeSettings(value) {
   const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const timer = Number(input.timer);
@@ -9,9 +9,11 @@ export function normalizeSettings(value) {
   return {
     timer:[0,3,5,10].includes(timer) ? timer : DEFAULT_SETTINGS.timer,
     autoSave:input.autoSave === true,
-    historyLimit:Number.isInteger(historyLimit)&&historyLimit>=1&&historyLimit<=20?historyLimit:DEFAULT_SETTINGS.historyLimit,
-    historyDays:[1,3,7].includes(historyDays)?historyDays:DEFAULT_SETTINGS.historyDays,
-    language:['auto','de','en','fr','it','es'].includes(input.language)?input.language:DEFAULT_SETTINGS.language
+    historyLimit:Number.isInteger(historyLimit)&&historyLimit>=1&&historyLimit<=100?historyLimit:DEFAULT_SETTINGS.historyLimit,
+    historyDays:[1,3,7,30].includes(historyDays)?historyDays:DEFAULT_SETTINGS.historyDays,
+    language:['auto','de','en','fr','it','es'].includes(input.language)?input.language:DEFAULT_SETTINGS.language,
+    exportPrefix:typeof input.exportPrefix==='string'&&/^[a-zA-Z0-9_-]{1,40}$/.test(input.exportPrefix)?input.exportPrefix:DEFAULT_SETTINGS.exportPrefix,
+    exportAskWhere:input.exportAskWhere===true
   };
 }
 export function captureEntries(records, settings = DEFAULT_SETTINGS, now=Date.now()) {
@@ -20,13 +22,14 @@ export function captureEntries(records, settings = DEFAULT_SETTINGS, now=Date.no
     /^capture:[a-f0-9-]{36}$/.test(key) && v && typeof v === 'object' &&
     typeof v.data === 'string' && v.data.startsWith('data:image/png;base64,') &&
     Number.isFinite(v.created) && v.created>0 && v.created<=now &&
-    now-v.created<=s.historyDays*86_400_000)
+    (v.favorite === true || now-v.created<=s.historyDays*86_400_000))
     .sort((a,b)=>b[1].created-a[1].created || a[0].localeCompare(b[0]));
 }
 export function keysToPrune(records, settings=DEFAULT_SETTINGS, now=Date.now()) {
-  const allowed=new Set(captureEntries(records,settings,now).slice(0,normalizeSettings(settings).historyLimit).map(([k])=>k));
+  const allowed=new Set(captureEntries(records,settings,now).sort((a,b)=>Number(b[1].favorite===true)-Number(a[1].favorite===true)||b[1].created-a[1].created).slice(0,normalizeSettings(settings).historyLimit).map(([k])=>k));
   return Object.keys(records||{}).filter(key=>key.startsWith('capture:')&&!allowed.has(key));
 }
-export function safeFilename(now=new Date()) {
-  return 'screenshot-'+now.toISOString().replace(/[:.]/g,'-')+'.png';
+export function safeFilename(now=new Date(), prefix='screenshot') {
+  const clean = typeof prefix==='string' && /^[a-zA-Z0-9_-]{1,40}$/.test(prefix) ? prefix : 'screenshot';
+  return clean+'-'+now.toISOString().replace(/[:.]/g,'-')+'.png';
 }

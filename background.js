@@ -3,10 +3,12 @@ import {createCaptureLifecycle, throwIfCancelled, cancellableDelay, withTimeout,
 import {isTrustedUiSender, isSelectionSender} from './message-policy.mjs';
 import {pageMetricsStable, totalCaptureBytes} from './capture-integrity.mjs';
 import {SETTINGS_KEY,normalizeSettings,keysToPrune} from './preferences.mjs';
+import {assertCaptureSource} from './capture-source.mjs';
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const lifecycle = createCaptureLifecycle();
 let selectionTimer = 0;
 let selectionExpiry = null;
+let runningJobs = 0; // Includes asynchronous restoration after CANCEL_CAPTURE.
 function clearSelectionExpiry() { if (selectionExpiry !== null) clearTimeout(selectionExpiry); selectionExpiry = null; }
 function expireSelection(job) { clearSelectionExpiry(); selectionExpiry = setTimeout(() => { if (lifecycle.active === job && lifecycle.state === 'selecting') { selectionTimer = 0; lifecycle.abort('Auswahl-Zeitlimit erreicht.'); chrome.scripting.executeScript({target:{tabId:job.tabId},func:()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))}).catch(()=>{}); } }, 120_000); }
 
@@ -24,35 +26,38 @@ async function openPreview(query = '') {
   return preview;
 }
 
-async function run(tabId, func, args = []) {
-  const result = await chrome.scripting.executeScript({target: {tabId}, func, args});
+async function run(tabId, func, args = [], signal = null) {
+  const result = await withTimeout(() => chrome.scripting.executeScript({target: {tabId}, func, args}), 20_000, signal, 'Seitenzugriff');
   if (!result?.[0]) throw new Error('Diese Webseite ist nicht erreichbar.');
   return result[0].result;
 }
-async function snapshot(tabId, signal) {
-  const tab = await chrome.tabs.get(tabId);
-  if (!tab.active) throw new Error('Der Quelltab ist nicht mehr aktiv.');
-  return withTimeout(() => chrome.tabs.captureVisibleTab(tab.windowId, {format:'png'}), 20_000, signal, 'Bildaufnahme');
+async function snapshot(tabId, signal, expected) {
+  const tab = await withTimeout(() => chrome.tabs.get(tabId), 10_000, signal, 'Quelltab');
+  assertCaptureSource(tab, expected);
+  const png = await withTimeout(() => chrome.tabs.captureVisibleTab(tab.windowId, {format:'png'}), 20_000, signal, 'Bildaufnahme');
+  // Detect navigation or tab switching while Chromium was producing the image.
+  assertCaptureSource(await withTimeout(() => chrome.tabs.get(tabId), 10_000, signal, 'Quelltab'), expected);
+  return png;
 }
-async function ensureOffscreen() {
-  if (await chrome.offscreen.hasDocument()) return;
+async function ensureOffscreen(signal) {
+  if (await withTimeout(() => chrome.offscreen.hasDocument(), 10_000, signal, 'Bildverarbeitung')) return;
   try {
-    await chrome.offscreen.createDocument({
+    await withTimeout(() => chrome.offscreen.createDocument({
       url: 'offscreen.html', reasons: ['BLOBS'],
       justification: 'Lokale Screenshots in einem Offscreen-Canvas zusammensetzen.'
-    });
+    }), 15_000, signal, 'Bildverarbeitung');
   } catch (error) {
     // Another capture might have created it while this call was pending.
-    if (!(await chrome.offscreen.hasDocument())) throw error;
+    if (!(await withTimeout(() => chrome.offscreen.hasDocument(), 10_000, signal, 'Bildverarbeitung'))) throw error;
   }
 }
 function captureId() { return crypto.randomUUID(); }
-async function publishCapture(payload, signal) {
+async function publishCapture(payload, signal, {preserveHistory = false} = {}) {
   throwIfCancelled(signal);
   // Keep only the configured bounded local history. Always reserve one slot for the new capture.
   const all = await chrome.storage.local.get(null);
   const settings = normalizeSettings(all[SETTINGS_KEY]);
-    const id = captureId();
+  const id = captureId();
   const key = `capture:${id}`;
   const record = {...payload, created: Date.now()};
   // Commit and open the new capture before deleting existing history. If the
@@ -65,14 +70,20 @@ async function publishCapture(payload, signal) {
     await chrome.storage.local.remove(key);
     throw error;
   }
-  const overflow = keysToPrune({...all, [key]:record}, settings).filter(item => item !== key);
+  // Error previews must not evict successful history; retain at most three errors.
+  const errorKeys = Object.entries({...all, [key]:record})
+    .filter(([entryKey, value]) => entryKey.startsWith('capture:') && typeof value?.error === 'string')
+    .sort((a,b) => (b[1].created || 0) - (a[1].created || 0))
+    .map(([entryKey]) => entryKey);
+  const overflow = preserveHistory ? errorKeys.slice(3).filter(entryKey => entryKey !== key)
+    : keysToPrune({...all, [key]:record}, settings).filter(item => item !== key);
   if (overflow.length) {
     try { await chrome.storage.local.remove(overflow); }
     catch (error) { console.warn('SCREENSHOT history cleanup:', error); }
   }
 }
 async function publishError(error) {
-  try { await publishCapture({error: error?.message || 'Aufnahme fehlgeschlagen.'}); }
+  try { await publishCapture({error: error?.message || 'Aufnahme fehlgeschlagen.'}, null, {preserveHistory:true}); }
   catch (previewError) { console.error('SCREENSHOT error preview:', previewError); }
 }
 async function capture(job, selection, timer = 0) {
@@ -84,11 +95,12 @@ async function capture(job, selection, timer = 0) {
   let capturedBytes = 0;
   try {
     if (!Number.isInteger(tabId)) throw new Error('Quelltab nicht gefunden.');
-    const tab = await chrome.tabs.get(tabId);
-    if (!/^https?:/.test(tab.url || '')) throw new Error('Nur HTTP(S)-Webseiten werden unterstützt.');
+    const tab = await withTimeout(() => chrome.tabs.get(tabId), 10_000, signal, 'Quelltab');
+    const source = assertCaptureSource(tab);
     if (timer) await cancellableDelay(timer * 1000, signal);
     throwIfCancelled(signal);
-    const viewport = await run(tabId, () => ({width: innerWidth, height: innerHeight, x: scrollX, y: scrollY}));
+    assertCaptureSource(await withTimeout(() => chrome.tabs.get(tabId), 10_000, signal, 'Quelltab'), source);
+    const viewport = await run(tabId, () => ({width: innerWidth, height: innerHeight, x: scrollX, y: scrollY}), [], signal);
     if (viewport.width <= 0 || viewport.height <= 0) throw new Error('Ungültige Fenstergrösse.');
     let shots = [];
     let width = viewport.width, height = viewport.height;
@@ -149,14 +161,14 @@ async function capture(job, selection, timer = 0) {
           pageWidth:Math.max(document.documentElement.scrollWidth, document.body?.scrollWidth || 0),
           pageHeight:Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight || 0)}));
         pageMetricsStable(stable, {x:0,y,width:viewport.width,height:viewport.height,pageWidth:width,pageHeight:height});
-        const data = await snapshot(tabId, signal);
+        const data = await snapshot(tabId, signal, source);
         capturedBytes = totalCaptureBytes(capturedBytes, data.length);
         shots.push({data, x: stable.x, y: stable.y});
         throwIfCancelled(signal);
       }
     } else {
       await cancellableDelay(mode === 'area' || mode === 'element' ? 220 : 80, signal);
-      const data = await snapshot(tabId, signal);
+      const data = await snapshot(tabId, signal, source);
       totalCaptureBytes(0, data.length);
       shots = [{data, x: 0, y: 0}];
     }
@@ -165,7 +177,7 @@ async function capture(job, selection, timer = 0) {
     if (endViewport.width !== viewport.width || endViewport.height !== viewport.height)
       throw new Error('Der sichtbare Bereich hat sich während der Aufnahme verändert.');
     lifecycle.transition('capturing', 'composing');
-    await ensureOffscreen();
+    await ensureOffscreen(signal);
     const response = await withTimeout(() => chrome.runtime.sendMessage({type:'COMPOSE',shots,width,height,mode,selection,viewport}), 45_000, signal, 'Bildverarbeitung');
     if (!response?.ok || !response.data) throw new Error(response?.error || 'Bildverarbeitung fehlgeschlagen.');
     if (typeof response.data !== 'string' || !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(response.data))
@@ -202,9 +214,10 @@ async function capture(job, selection, timer = 0) {
 }
 
 async function startJob(job, selection, timer) {
+  runningJobs++;
   try { await capture(job, selection, timer); }
   catch (error) { if (!job.controller.signal.aborted) { console.error('SCREENSHOT job:', error); await publishError(error); } }
-  finally { lifecycle.finish(job); }
+  finally { lifecycle.finish(job); runningJobs--; }
 }
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   const uiCommand = ['STATUS', 'CANCEL_CAPTURE', 'START', 'OPEN_WINDOW_PREVIEW', 'OPEN_HISTORY_CAPTURE'].includes(message?.type);
@@ -245,6 +258,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     let timer;
     try { timer = timerSeconds(message.timer ?? 0); } catch (error) { respond({ok:false,error:error.message}); return; }
     const selecting = message.mode === 'area' || message.mode === 'element';
+    if (runningJobs) { respond({ok:false,error:'Die vorherige Aufnahme wird noch abgeschlossen. Bitte erneut versuchen.'}); return; }
     let job;
     try {job = lifecycle.begin(selecting ? 'selecting' : 'capturing', message.tabId, message.mode);}
     catch(error) {respond({ok:false,error:error.message});return;}
@@ -295,6 +309,7 @@ chrome.commands?.onCommand?.addListener(async command => {
     if(!tab?.id||!/^https?:/.test(tab.url||''))throw new Error('Bitte eine HTTP(S)-Webseite öffnen.');
     const data=await chrome.storage.local.get(SETTINGS_KEY);
     const timer=normalizeSettings(data[SETTINGS_KEY]).timer;
+    if (runningJobs) throw new Error('Die vorherige Aufnahme wird noch abgeschlossen.');
     const job=lifecycle.begin('capturing',tab.id,mode);
     void startJob(job,null,timer);
   }catch(error){console.warn('SCREENSHOT shortcut:',error.message);}

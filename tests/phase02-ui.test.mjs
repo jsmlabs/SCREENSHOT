@@ -25,7 +25,8 @@ test('Phase 02 status stays semantic and capture start is guarded against repeat
  const js=read('popup.js');
  assert.match(js,/if \(starting\) return;/);
  assert.match(js,/status\.className = 'busy'/);
- assert.match(js,/status\.className = 'error'/);
+ assert.match(js,/function displayError\(error\)/);
+ assert.match(js,/translateError\(language,error\)/);
  assert.match(read('style.css'),/prefers-reduced-motion/);
  assert.match(read('style.css'),/prefers-color-scheme:light/);
 });

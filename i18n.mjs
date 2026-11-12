@@ -13,7 +13,33 @@ export const browserLanguages = () => [
   typeof chrome !== 'undefined' && chrome.i18n?.getUILanguage ? chrome.i18n.getUILanguage() : '',
   typeof navigator !== 'undefined' ? navigator.language : ''
 ];
-export function translate(language, text) { return translations[language]?.[text] || text; }
+export function translate(language, text) {
+  return translations[language]?.[text] ?? translations.en[text] ?? text;
+}
+// Keep browser/extension diagnostic details in the console, not untranslated UI.
+// All known extension errors use a stable German message identifier at the API boundary.
+export function translateError(language, error, fallback = 'Unbekannter Fehler. Bitte erneut versuchen.') {
+  const message = String(error?.message ?? error ?? '').trim();
+  if (!message) return translate(language, fallback);
+  if (Object.hasOwn(translations.de, message)) return translate(language, message);
+  const timeout = /^(.+): Zeitlimit überschritten\.$/.exec(message);
+  if (timeout && Object.hasOwn(translations.de, timeout[1]))
+    return `${translate(language, timeout[1])}: ${translate(language, 'Zeitlimit überschritten.')}`;
+  const prefixes = [
+    'PNG konnte nicht gerendert werden:', 'Auto-Save fehlgeschlagen:',
+    'Screenshot konnte nicht verarbeitet werden:', 'Bearbeitung fehlgeschlagen:',
+    'Fensteraufnahme:', 'Kopieren nicht möglich:',
+    'Automatisches Kopieren fehlgeschlagen:'
+  ];
+  const prefix = prefixes.find(value => message.startsWith(value));
+  if (prefix) {
+    const detail = message.slice(prefix.length).trim();
+    const detailText = detail && Object.hasOwn(translations.de, detail)
+      ? translate(language, detail) : translate(language, fallback);
+    return `${translate(language, prefix)} ${detailText}`;
+  }
+  return translate(language, fallback);
+}
 const originalText=new WeakMap();
 const originalAttributes=new WeakMap();
 export function applyTranslations(root,language) {

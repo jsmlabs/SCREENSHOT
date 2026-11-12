@@ -3,7 +3,7 @@ import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
 const manifest=JSON.parse(readFileSync(join(root,'manifest.json')));
-if(manifest.manifest_version!==3 || manifest.version!=='1.12.0')throw new Error('Unexpected manifest version');
+if(manifest.manifest_version!==3 || manifest.version!=='1.18.0')throw new Error('Unexpected manifest version');
 if(manifest.host_permissions?.length || manifest.externally_connectable)throw new Error('Unexpected external access');
 if(manifest.content_security_policy?.extension_pages?.includes('unsafe-eval'))throw new Error('Unsafe CSP');
 function walk(dir){for(const entry of readdirSync(dir,{withFileTypes:true})){
