@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initialEdit,cloneEdit,createHistory,current,commit,undo,redo,canUndo,canRedo,applyCrop,addAnnotation,rectBetween,localToSource,validateEdit} from '../edit-model.mjs';
+import {initialEdit,cloneEdit,createHistory,current,commit,undo,redo,canUndo,canRedo,applyCrop,addAnnotation,rectBetween,localToSource,validateEdit} from '../src/editor/edit-model.mjs';
 
 test('Default crop covers original image exactly',()=>{
   const edit=initialEdit(1920,1080);

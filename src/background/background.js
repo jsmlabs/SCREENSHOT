@@ -1,9 +1,9 @@
-import {timerSeconds, captureBounds, tilePositions, validateFullSize} from './capture-plan.mjs';
-import {createCaptureLifecycle, throwIfCancelled, cancellableDelay, withTimeout, CAPTURE_TIMEOUT_MS} from './capture-lifecycle.mjs';
-import {isTrustedUiSender, isSelectionSender} from './message-policy.mjs';
-import {pageMetricsStable, totalCaptureBytes} from './capture-integrity.mjs';
-import {SETTINGS_KEY,normalizeSettings,keysToPrune} from './preferences.mjs';
-import {assertCaptureSource} from './capture-source.mjs';
+import {timerSeconds, captureBounds, tilePositions, validateFullSize} from '../capture/capture-plan.mjs';
+import {createCaptureLifecycle, throwIfCancelled, cancellableDelay, withTimeout, CAPTURE_TIMEOUT_MS} from '../capture/capture-lifecycle.mjs';
+import {isTrustedUiSender, isSelectionSender} from '../shared/message-policy.mjs';
+import {pageMetricsStable, totalCaptureBytes} from '../capture/capture-integrity.mjs';
+import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../shared/preferences.mjs';
+import {assertCaptureSource} from '../capture/capture-source.mjs';
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const lifecycle = createCaptureLifecycle();
 let selectionTimer = 0;
@@ -17,7 +17,7 @@ function expireSelection(job) { clearSelectionExpiry(); selectionExpiry = setTim
 let previewQueue = Promise.resolve();
 async function openPreview(query = '') {
   const request = previewQueue.catch(() => {}).then(async () => {
-    const editorUrl = chrome.runtime.getURL('editor.html');
+    const editorUrl = chrome.runtime.getURL('src/editor/editor.html');
     const targetUrl = editorUrl + query;
     const windows = await chrome.windows.getAll({populate:true,windowTypes:['normal','popup']});
     const existing = windows.flatMap(window => (window.tabs || [])
@@ -77,7 +77,7 @@ async function ensureOffscreen(signal) {
   if (await withTimeout(() => chrome.offscreen.hasDocument(), 10_000, signal, 'Bildverarbeitung')) return;
   try {
     await withTimeout(() => chrome.offscreen.createDocument({
-      url: 'offscreen.html', reasons: ['BLOBS'],
+      url: 'src/offscreen/offscreen.html', reasons: ['BLOBS'],
       justification: 'Lokale Screenshots in einem Offscreen-Canvas zusammensetzen.'
     }), 15_000, signal, 'Bildverarbeitung');
   } catch (error) {
@@ -175,7 +175,7 @@ async function capture(job, selection, timer = 0) {
         document.documentElement.appendChild(rule);
       }, [metrics]);
       // The page-owned watchdog remains alive if the MV3 service worker is suspended.
-      await chrome.scripting.executeScript({target:{tabId},files:['capture-recovery.js']});
+      await chrome.scripting.executeScript({target:{tabId},files:['src/capture/capture-recovery.js']});
       const positions = tilePositions(height, viewport.height);
       for (let index=0; index<positions.length; index++) {
         throwIfCancelled(signal);
@@ -299,7 +299,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (selecting) {
       selectionTimer = timer;
       expireSelection(job);
-      chrome.scripting.executeScript({target:{tabId:message.tabId},files:[message.mode === 'area' ? 'selection.js' : 'element-selection.js']})
+      chrome.scripting.executeScript({target:{tabId:message.tabId},files:[message.mode === 'area' ? 'src/capture/selection.js' : 'src/capture/element-selection.js']})
         .then(() => {
           if (lifecycle.active !== job) {
             chrome.scripting.executeScript({target:{tabId:job.tabId},func:()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))}).catch(()=>{});

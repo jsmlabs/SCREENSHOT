@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const offscreenURL=pathToFileURL(resolve(root,'offscreen.js')).href;
+const offscreenURL=pathToFileURL(resolve(root,'src/offscreen/offscreen.js')).href;
 
 test('Offscreen stitches without overpainting seam; closes every bitmap',async()=>{
   let handler;
@@ -20,7 +20,7 @@ test('Offscreen stitches without overpainting seam; closes every bitmap',async()
   globalThis.document={createElement:()=>({width:0,height:0,getContext(){return {imageSmoothingEnabled:true,drawImage(...args){calls.push(args)}}},toDataURL:()=>('data:image/png;base64,AA==')})};
   try {
     await import(offscreenURL+'?integration=1');
-    const response=await new Promise(resolve=>handler({type:'COMPOSE',mode:'full',shots:[0,400,600].map(y=>({x:0,y,data:'data:image/png;base64,AA=='})),width:500,height:1000,viewport:{width:500,height:400}}, {id:'test',url:'chrome-extension://test/background.js'},resolve));
+    const response=await new Promise(resolve=>handler({type:'COMPOSE',mode:'full',shots:[0,400,600].map(y=>({x:0,y,data:'data:image/png;base64,AA=='})),width:500,height:1000,viewport:{width:500,height:400}}, {id:'test',url:'chrome-extension://test/src/background/background.js'},resolve));
     assert.equal(response.ok,true,response.error);
     assert.equal(response.clipboard,undefined);
     assert.equal(copied.length,0, 'offscreen documents must not attempt clipboard writes');

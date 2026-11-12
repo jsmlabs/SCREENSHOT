@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pageMetricsStable,totalCaptureBytes,MAX_CAPTURE_DATA_CHARS} from '../capture-integrity.mjs';
-import {validateComposeMessage} from '../message-policy.mjs';
+import {pageMetricsStable,totalCaptureBytes,MAX_CAPTURE_DATA_CHARS} from '../src/capture/capture-integrity.mjs';
+import {validateComposeMessage} from '../src/shared/message-policy.mjs';
 
 const stable={x:0,y:400,width:640,height:400,pageWidth:640,pageHeight:1200};
 test('Stable full-page metrics are accepted after tile settles',()=>{

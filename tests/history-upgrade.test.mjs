@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {normalizedCaptureName,libraryEntries} from '../history-library.mjs';
+import {normalizedCaptureName,libraryEntries} from '../src/shared/history-library.mjs';
 
 const records = [
   ['capture:a',{name:'Café résumé',mode:'area',created:1,favorite:true}],
@@ -20,7 +20,7 @@ test('control characters are rejected before normalization',()=>{
   assert.equal(normalizedCaptureName('  clean   screenshot  ',''),'clean screenshot');
 });
 test('history filtering runs on cached records and does not issue a storage read per keystroke',()=>{
-  const js=readFileSync(new URL('../popup.js',import.meta.url),'utf8');
+  const js=readFileSync(new URL('../src/popup/popup.js',import.meta.url),'utf8');
   assert.match(js,/searchField\.addEventListener\('input',renderHistory\)/);
   assert.match(js,/favoritesField\.addEventListener\('change',renderHistory\)/);
   assert.match(js,/if\(token!==historyRefreshToken\)return/);

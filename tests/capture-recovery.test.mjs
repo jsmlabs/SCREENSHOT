@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname,resolve} from 'node:path';
-const code=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../capture-recovery.js'),'utf8');
+const code=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../src/capture/capture-recovery.js'),'utf8');
 function harness(connected=true) {
   const events=[],attrs=[{removeAttribute(k){events.push('remove-attribute:'+k)}}];
   const rule={isConnected:connected,dataset:{started:'1000',restore:JSON.stringify({x:20,y:50,rootBehavior:'smooth',bodyBehavior:'auto'})},remove(){events.push('remove-rule');this.isConnected=false}};

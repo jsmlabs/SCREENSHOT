@@ -33,9 +33,9 @@ try:
             response = worker.evaluate("async tabId => chrome.runtime.sendMessage({type:'START', mode:'visible', tabId})",tab_id)
             assert response['ok'], response
             try:
-                popup = context.wait_for_event('page',predicate=lambda page:'editor.html' in page.url,timeout=12000)
+                popup = context.wait_for_event('page',predicate=lambda page:'src/editor/editor.html' in page.url,timeout=12000)
             except Exception:
-                popup = next((page for page in context.pages if 'editor.html' in page.url),None)
+                popup = next((page for page in context.pages if 'src/editor/editor.html' in page.url),None)
             assert popup,'No popup page'
             popup.locator('#preview:not([hidden])').wait_for(timeout=8000)
             assert popup.locator('#notice').inner_text().startswith('Bereit')

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {normalizedCaptureName,libraryEntries,bytesLabel} from '../history-library.mjs';
-import {captureEntries,keysToPrune,normalizeSettings,safeFilename} from '../preferences.mjs';
-import {translations} from '../locales.mjs';
+import {normalizedCaptureName,libraryEntries,bytesLabel} from '../src/shared/history-library.mjs';
+import {captureEntries,keysToPrune,normalizeSettings,safeFilename} from '../src/shared/preferences.mjs';
+import {translations} from '../src/shared/locales.mjs';
 const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const now=1_800_000_000_000;
 const id=n=>`capture:${String(n).padStart(36,'0')}`;
@@ -36,7 +36,7 @@ test('storage label handles tiny and large sizes',()=>{
  assert.equal(bytesLabel(0),'0 B');assert.equal(bytesLabel(1024),'1.0 KB');assert.equal(bytesLabel(2*1048576),'2.0 MB');
 });
 test('popup and editor wire search, rename, favorites, export and storage metadata',()=>{
- const html=read('popup.html'),js=read('popup.js'),editor=read('editor.js');
+ const html=read('src/popup/popup.html'),js=read('src/popup/popup.js'),editor=read('src/editor/editor.js');
  for(const id of ['history-search','history-favorites','history-count','history-storage','export-prefix','export-ask-where'])assert.match(html,new RegExp(`id="${id}"`));
  for(const call of ['libraryEntries','normalizedCaptureName','getBytesInUse','chrome.downloads.download'])assert.ok(js.includes(call));
  assert.match(js,/chrome\.storage\.local\.set\(\{\[key\]:\{\.\.\.record,favorite:!record\.favorite\}\}\)/);

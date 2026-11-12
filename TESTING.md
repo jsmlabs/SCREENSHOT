@@ -6,8 +6,8 @@
 
 | Check | Result | Scope |
 | --- | --- | --- |
-| `node --test tests/*.test.mjs` | **PASS - 144/144** | Mocked Chrome interfaces, modules and source contracts |
-| `node tests/release-check.mjs` | **PASS** | Manifest, entrypoints, unsafe script/eval checks |
+| `node --test tests/*.test.mjs` | **PASS - 151/151** | Mocked Chrome interfaces, modules and source contracts |
+| `node tests/release-check.mjs` | **PASS** | Manifest, entrypoints, local imports and assets, unsafe script/eval checks |
 | `node --check` (JS/MJS application and tests) | **PASS** | Syntax only |
 | JSON parse (`manifest.json`, `_locales/*/messages.json`) | **PASS** | Parseability |
 | Relative Markdown links | **PASS** | Local referenced paths |

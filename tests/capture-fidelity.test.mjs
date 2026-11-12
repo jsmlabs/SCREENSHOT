@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {captureScale,fullTilePlan,cropPixelPlan} from '../capture-fidelity.mjs';
+import {captureScale,fullTilePlan,cropPixelPlan} from '../src/capture/capture-fidelity.mjs';
 
 test('Scale reads actual captured PNG geometry rather than assumed DPR',()=>{
   assert.deepEqual(captureScale(1500,900,{width:1000,height:600}),{sx:1.5,sy:1.5});

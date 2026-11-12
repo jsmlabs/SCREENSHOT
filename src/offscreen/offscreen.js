@@ -1,5 +1,5 @@
-import {captureScale, fullTilePlan, cropPixelPlan} from './capture-fidelity.mjs';
-import {isWorkerSender,validateComposeMessage} from './message-policy.mjs';
+import {captureScale, fullTilePlan, cropPixelPlan} from '../capture/capture-fidelity.mjs';
+import {isWorkerSender,validateComposeMessage} from '../shared/message-policy.mjs';
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type !== 'COMPOSE') return;
   if (!isWorkerSender(sender, chrome.runtime)) {sendResponse({ok:false,error:'Nicht autorisierter Bildauftrag.'});return;}

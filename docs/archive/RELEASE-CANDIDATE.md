@@ -1,6 +1,6 @@
 ## Phase 06 gate
 
-Status **HOLD** pending real extension and Windows clipboard E2E acceptance. See PHASE-06-RELEASE-REPORT.md.
+Status **HOLD** pending real extension and Windows clipboard E2E acceptance. See [PHASE-06-RELEASE-REPORT.md](PHASE-06-RELEASE-REPORT.md).
 
 # Phase 05 verification addendum (2026-11-11)
 

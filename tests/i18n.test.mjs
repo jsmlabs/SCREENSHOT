@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
-import {resolveLanguage,translate} from '../i18n.mjs';
-import {normalizeSettings} from '../preferences.mjs';
+import {resolveLanguage,translate} from '../src/shared/i18n.mjs';
+import {normalizeSettings} from '../src/shared/preferences.mjs';
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
 test('automatic language matches browser preference and falls back to English',()=>{
   assert.equal(resolveLanguage('auto',['de-CH','en-US']),'de');
@@ -21,6 +21,6 @@ test('five translations cover capture and editor primary entry points',()=>{
   for(const key of ['NEUE AUFNAHME','Einstellungen','Sprache','Kopieren','Bild wird geladen …'])assert.equal(typeof translate(language,key),'string');
   assert.ok(existsSync(new URL(`../_locales/${language}/messages.json`,import.meta.url)));
  }
- const html=read('popup.html'); assert.match(html,/id="interface-language"/);
- assert.match(read('popup.js'),/updatePreferences\(\{language:languageField.value\}\)/);
+ const html=read('src/popup/popup.html'); assert.match(html,/id="interface-language"/);
+ assert.match(read('src/popup/popup.js'),/updatePreferences\(\{language:languageField.value\}\)/);
 });

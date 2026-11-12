@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read = path => readFileSync(new URL('../'+path,import.meta.url),'utf8');
-const css=read('style.css');
-const popup=read('popup.js');
+const css=read('src/shared/style.css');
+const popup=read('src/popup/popup.js');
 test('popup scroll is bounded and footer remains available on short extension windows',()=>{
   assert.match(css,/\.popup\{[^}]*max-height:600px;[^}]*overflow:hidden/);
   assert.match(css,/\.popup-content\{[^}]*min-height:0;overflow-y:auto/);
@@ -23,5 +23,5 @@ test('failed preference writes restore displayed values, not just internal setti
 test('UI version matches extension manifest',()=>{
   const manifest=JSON.parse(read('manifest.json'));
   assert.equal(manifest.version,'1.18.0');
-  assert.match(read('popup.html'),/v1\.18\.0/);
+  assert.match(read('src/popup/popup.html'),/v1\.18\.0/);
 });

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createAutomaticClipboard} from '../clipboard-flow.mjs';
+import {createAutomaticClipboard} from '../src/shared/clipboard-flow.mjs';
 const settle = () => new Promise(resolve => setImmediate(resolve));
 test('focused editor writes original PNG and acknowledges only after success', async () => {
   const states=[]; let resolve;

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {TOOLS,strokeWidth,toolForKey,shouldHandleShortcut,normalisedWheelDelta,sameCrop} from '../editor-interactions.mjs';
+import {TOOLS,strokeWidth,toolForKey,shouldHandleShortcut,normalisedWheelDelta,sameCrop} from '../src/editor/editor-interactions.mjs';
 test('Toolbar shortcuts map only allowed tools',()=>{
   for(const [key,tool] of [['v','pan'],['s','select'],['b','blur'],['i','pixelate'],['C','crop'],['r','rect'],['a','arrow'],['p','pen'],['t','text']]) assert.equal(toolForKey(key),tool);
   assert.equal(toolForKey('x'),null);assert.equal(TOOLS.length,9);

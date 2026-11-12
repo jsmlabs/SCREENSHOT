@@ -1,6 +1,6 @@
-import {resolveLanguage,browserLanguages,applyTranslations,translate,translateError} from './i18n.mjs';
-import {normalizedCaptureName,libraryEntries,bytesLabel} from './history-library.mjs';
-import {safeFilename,SETTINGS_KEY, DEFAULT_SETTINGS, normalizeSettings, captureEntries, keysToPrune} from './preferences.mjs';
+import {resolveLanguage,browserLanguages,applyTranslations,translate,translateError} from '../shared/i18n.mjs';
+import {normalizedCaptureName,libraryEntries,bytesLabel} from '../shared/history-library.mjs';
+import {safeFilename,SETTINGS_KEY, DEFAULT_SETTINGS, normalizeSettings, captureEntries, keysToPrune} from '../shared/preferences.mjs';
 const status = document.querySelector('#status');
 const languageField=document.querySelector('#interface-language');
 let language='en';

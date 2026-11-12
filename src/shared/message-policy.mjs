@@ -1,13 +1,15 @@
-import {totalCaptureBytes} from './capture-integrity.mjs';
+import {totalCaptureBytes} from '../capture/capture-integrity.mjs';
 // Allow only extension-owned UI to issue privileged worker commands.
 export function isTrustedUiSender(sender, runtime) {
   if (!sender || sender.id !== runtime.id || typeof sender.url !== 'string') return false;
-  return sender.url === runtime.getURL('popup.html') || /^editor\.html(?:\?.*)?$/.test(sender.url.slice(runtime.getURL('').length));
+  const editorUrl = runtime.getURL('src/editor/editor.html');
+  return sender.url === runtime.getURL('src/popup/popup.html') ||
+    sender.url === editorUrl || sender.url.startsWith(editorUrl + '?');
 }
 
 // Offscreen composition is an internal worker-only operation.
 export function isWorkerSender(sender, runtime) {
-  return !!sender && sender.id === runtime.id && sender.url === runtime.getURL('background.js');
+  return !!sender && sender.id === runtime.id && sender.url === runtime.getURL('src/background/background.js');
 }
 
 export function isSelectionSender(sender, job) {

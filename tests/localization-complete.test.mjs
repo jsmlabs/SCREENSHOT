@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {translations} from '../locales.mjs';
-import {translate, translateError, resolveLanguage} from '../i18n.mjs';
+import {translations} from '../src/shared/locales.mjs';
+import {translate, translateError, resolveLanguage} from '../src/shared/i18n.mjs';
 const read = file => readFileSync(new URL(`../${file}`,import.meta.url),'utf8');
 const languages=['de','en','fr','it','es'];
 const required = Object.keys(translations.de);
@@ -14,7 +14,7 @@ test('all five locale dictionaries have identical nonempty coverage',()=>{
 });
 test('user-facing static HTML strings and labels have translations',()=>{
   const ignored=new Set(['SCREENSHOT','Deutsch','English','Français','Italiano','Español','›','⌄','1:1','100%']);
-  for(const file of ['popup.html','editor.html']){
+  for(const file of ['src/popup/popup.html','src/editor/editor.html']){
     const html=read(file).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi,'').replace(/<kbd\b[^>]*>[\s\S]*?<\/kbd>/gi,'');
     const attrs=[...html.matchAll(/(?:title|aria-label|placeholder|alt)="([^"]+)"/g)].map(m=>m[1]);
     const nodes=[...html.matchAll(/>([^<>]+)</g)].map(m=>m[1].trim());
@@ -26,7 +26,7 @@ test('user-facing static HTML strings and labels have translations',()=>{
   }
 });
 test('dynamic literal keys used by popup and editor exist in all dictionaries',()=>{
-  for(const file of ['popup.js','editor.js']){
+  for(const file of ['src/popup/popup.js','src/editor/editor.js']){
     for(const [,key] of read(file).matchAll(/\bt\('([^'\n]+)'\)/g)) assert.ok(required.includes(key),`${file}: ${key}`);
   }
 });
@@ -40,7 +40,7 @@ test('all five locales translate extension errors and timeout labels, with safe 
   }
 });
 test('UI routes all error surfaces through language-aware rendering',()=>{
-  const popup=read('popup.js'), editor=read('editor.js');
+  const popup=read('src/popup/popup.js'), editor=read('src/editor/editor.js');
   assert.match(popup,/function displayError\(error\).*translateError\(language,error\)/);
   assert.match(popup,/setInterfaceLanguage\(\).*lastError/);
   assert.match(editor,/notice\.textContent = error \? translateError\(language,message\)/);

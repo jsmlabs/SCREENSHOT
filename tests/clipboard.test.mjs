@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {copyPngToClipboard} from '../clipboard.mjs';
+import {copyPngToClipboard} from '../src/shared/clipboard.mjs';
 
 class FakeClipboardItem { constructor(data) { this.data=data; } }
 

@@ -21,7 +21,7 @@ try:
         browser=p.chromium.launch(executable_path='/usr/bin/chromium',headless=True,args=['--no-sandbox'])
         page=browser.new_page(viewport={'width':920,'height':680})
         page.add_init_script("window.chrome={storage:{local:{get:async key=>({[key]:{data:" + json.dumps(data) + ",created:Date.now(),mode:'visible'}}),remove:async()=>{}}}};")
-        page.goto(f'http://127.0.0.1:{server.server_port}/editor.html?id={identifier}')
+        page.goto(f'http://127.0.0.1:{server.server_port}/src/editor/editor.html?id={identifier}')
         page.locator('#preview:not([hidden])').wait_for(timeout=5000)
         assert page.locator('#notice').inner_text().startswith('Bereit')
         assert page.locator('#zoom-value').inner_text()=='100%'

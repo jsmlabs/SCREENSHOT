@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {normalizeSettings,DEFAULT_SETTINGS,SETTINGS_KEY,captureEntries,keysToPrune,safeFilename} from '../preferences.mjs';
+import {normalizeSettings,DEFAULT_SETTINGS,SETTINGS_KEY,captureEntries,keysToPrune,safeFilename} from '../src/shared/preferences.mjs';
 const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const id=n=>`capture:${String(n).padStart(36,'0')}`;
 const now=1_800_000_000_000;
@@ -27,7 +27,7 @@ test('local history discards expired, malformed, error and excess records determ
  assert.equal(removed.includes('other'),false);
 });
 test('popup exposes reversible settings, accessible history controls and Chrome shortcut settings',()=>{
- const html=read('popup.html'),js=read('popup.js');
+ const html=read('src/popup/popup.html'),js=read('src/popup/popup.js');
  for(const selector of ['auto-save','history-limit','history-days','capture-history','clear-history','manage-shortcuts'])assert.match(html,new RegExp(`id="${selector}"`));
  assert.match(js,/SETTINGS_KEY/);assert.match(js,/captureEntries\(/);assert.match(js,/keysToPrune\(/);
  assert.match(js,/chrome:\/\/extensions\/shortcuts/);
@@ -35,7 +35,7 @@ test('popup exposes reversible settings, accessible history controls and Chrome 
  assert.doesNotMatch(js,/innerHTML\s*=/);
 });
 test('worker restricts history access to trusted extension UI, respects bounded retention and enables Chrome shortcuts',()=>{
- const js=read('background.js'),m=JSON.parse(read('manifest.json'));
+ const js=read('src/background/background.js'),m=JSON.parse(read('manifest.json'));
  assert.match(js,/OPEN_HISTORY_CAPTURE/);
  assert.match(js,/isTrustedUiSender\(sender, chrome\.runtime\)/);
  assert.match(js,/keysToPrune\(\{\.\.\.all, \[key\]:record\}, settings\)/);
@@ -45,7 +45,7 @@ test('worker restricts history access to trusted extension UI, respects bounded 
  assert.equal(m.host_permissions,undefined);
 });
 test('editor auto-save is opt-in and requests downloads only after full preview render',()=>{
- const js=read('editor.js');
+ const js=read('src/editor/editor.js');
  assert.match(js,/normalizeSettings\(stored\[SETTINGS_KEY\]\)\.autoSave/);
  assert.match(js,/chrome\.downloads\.download\(\{url:data,filename:safeFilename\(new Date\(\),normalizeSettings/);
  assert.match(js,/render\(\(\) => \{scheduleAutomaticCopy\(value\);if\(new URLSearchParams\(location.search\).get\('fresh'\)==='1'\)void autoSaveOriginal\(value\);\}\)/);
@@ -53,7 +53,7 @@ test('editor auto-save is opt-in and requests downloads only after full preview 
 });
 
 test('unrelated preference changes do not trigger costly image-history reload',()=>{
- const js=read('popup.js');
+ const js=read('src/popup/popup.js');
  assert.match(js,/if \('historyLimit' in patch \|\| 'historyDays' in patch\) await refreshHistory\(true\)/);
  assert.match(js,/else if \('language' in patch\) renderHistory\(\)/);
 });

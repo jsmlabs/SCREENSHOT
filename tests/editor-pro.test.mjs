@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {initialEdit,addAnnotation,createHistory,commit,current,undo,redo} from '../edit-model.mjs';
-import {annotationBounds,resizeAnnotation,resizeObject,patchAnnotation,moveAnnotation} from '../edit-objects.mjs';
-import {translate} from '../i18n.mjs';
+import {initialEdit,addAnnotation,createHistory,commit,current,undo,redo} from '../src/editor/edit-model.mjs';
+import {annotationBounds,resizeAnnotation,resizeObject,patchAnnotation,moveAnnotation} from '../src/editor/edit-objects.mjs';
+import {translate} from '../src/shared/i18n.mjs';
 const source=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 test('resizing rectangle does not mutate source, supports history undo/redo',()=>{
  const original=addAnnotation(initialEdit(500,500),{type:'rect',x:20,y:30,w:100,h:80,width:4});
@@ -44,7 +44,7 @@ test('keyboard nudge uses immutable model and supports fine/coarse increments',(
  assert.deepEqual([state.annotations[0].x,fine.annotations[0].x,coarse.annotations[0].y],[10,11,0]);
 });
 test('editor Pro UI wiring and five translations available',()=>{
- const html=source('editor.html'),js=source('editor.js');
+ const html=source('src/editor/editor.html'),js=source('src/editor/editor.js');
  assert.match(html,/id="edit-font-size"/);assert.match(js,/dragging\.mode==='resize'/);
  assert.match(js,/event\.shiftKey\?10:1/);assert.match(js,/fontSizePicker\.addEventListener/);
  for(const lang of ['de','en','fr','it','es'])for(const phrase of ['Textgrösse','Auswahlgriff ziehen: Skalieren'])assert.ok(typeof translate(lang,phrase)==='string' && translate(lang,phrase).length>0);

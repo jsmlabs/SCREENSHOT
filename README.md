@@ -64,22 +64,19 @@ Screenshots are stored as PNG data URLs in `chrome.storage.local`, along with lo
 
 ## Architecture
 
-```text
-popup.html / popup.js            Capture actions, history and settings
-editor.html / editor.js          Image editing, output and new capture
-background.js                    MV3 service worker and lifecycle coordination
-capture-*.mjs                    Source checks, tiling, fidelity and recovery
-selection.js / element-selection.js   Page-injected capture selectors
-offscreen.html / offscreen.js    Local PNG composition
-edit-*.mjs / viewport.mjs       Non-destructive image state and render geometry
-preferences.mjs                 Validation, history retention and filenames
-history-library.mjs             Search, names, favorites and storage formats
-i18n.mjs / locales.mjs           UI localization and fallback
-_locales/*/messages.json        Chromium extension metadata translations
-tests/*                         Node regression and optional Playwright scripts
-```
+| Path | Responsibility |
+| --- | --- |
+| `manifest.json`, `_locales/`, `icons/` | Chromium manifest, extension metadata translations, and icons |
+| `src/background/` | MV3 service worker and capture orchestration |
+| `src/capture/` | Capture planning, validation, page-injected selection, and recovery |
+| `src/popup/` | Capture controls, history, and preferences |
+| `src/editor/` | Editing, preview, rendering, and export |
+| `src/offscreen/` | Local PNG composition |
+| `src/shared/` | Localization, clipboard, message policy, preferences, and CSS |
+| `tests/` | Node regressions, release checks, and optional browser tests |
+| `docs/archive/` | Historical reports and release tooling |
 
-No runtime package dependencies or application framework are required. Source uses browser APIs, JavaScript modules and CSS.
+Load the repository root in Chrome or Edge as an unpacked extension. No runtime dependencies or build step are required.
 
 ## Development and verification
 

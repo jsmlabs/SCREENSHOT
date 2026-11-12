@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {initialEdit,addAnnotation,createHistory,current,commit,undo,redo,validateEdit} from '../edit-model.mjs';
-import {annotationBounds,findAnnotation,hitAnnotation,translateAnnotation,moveAnnotation,removeAnnotation,patchAnnotation} from '../edit-objects.mjs';
-import {paintAnnotation,renderEdit} from '../edit-render.mjs';
+import {initialEdit,addAnnotation,createHistory,current,commit,undo,redo,validateEdit} from '../src/editor/edit-model.mjs';
+import {annotationBounds,findAnnotation,hitAnnotation,translateAnnotation,moveAnnotation,removeAnnotation,patchAnnotation} from '../src/editor/edit-objects.mjs';
+import {paintAnnotation,renderEdit} from '../src/editor/edit-render.mjs';
 const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 test('Selection chooses topmost overlapping object and rejects distant points',()=>{
   const items=[{type:'rect',x:2,y:3,w:50,h:40},{type:'text',x:10,y:10,text:'Top',fontSize:20}];
@@ -54,7 +54,7 @@ test('Effect renderer uses source image with separate blur and pixelate operatio
   }finally{globalThis.document=documentBefore;}
 });
 test('Editor wiring exposes selection, effects and semantic actions, preserving existing tools',()=>{
-  const html=read('editor.html'),js=read('editor.js');
+  const html=read('src/editor/editor.html'),js=read('src/editor/editor.js');
   for(const name of ['pan','select','crop','rect','arrow','pen','text','blur','pixelate'])assert.match(html,new RegExp('data-tool="'+name+'"'));
   for(const id of ['edit-object','delete-object','copy','save','undo','redo'])assert.match(html,new RegExp('id="'+id+'"'));
   assert.match(js,/function deleteSelected\(/);

@@ -14,11 +14,11 @@
     "downloads"
   ],
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "src/background/background.js",
     "type": "module"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/popup.html",
     "default_title": "__MSG_actionTitle__"
   },
   "icons": {

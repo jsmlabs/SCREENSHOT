@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout} from '../capture-lifecycle.mjs';
+import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout} from '../src/capture/capture-lifecycle.mjs';
 
 test('lifecycle enforces one active job and explicit state transitions', () => {
   const life = createCaptureLifecycle(() => 42);

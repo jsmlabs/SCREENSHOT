@@ -1,16 +1,16 @@
-import {assertCaptureSource} from '../capture-source.mjs';
-import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../preferences.mjs';
-import {pageMetricsStable,totalCaptureBytes} from '../capture-integrity.mjs';
-import {isTrustedUiSender,isSelectionSender} from '../message-policy.mjs';
+import {assertCaptureSource} from '../src/capture/capture-source.mjs';
+import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../src/shared/preferences.mjs';
+import {pageMetricsStable,totalCaptureBytes} from '../src/capture/capture-integrity.mjs';
+import {isTrustedUiSender,isSelectionSender} from '../src/shared/message-policy.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname,resolve} from 'node:path';
 import vm from 'node:vm';
-import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../capture-plan.mjs';
-import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../capture-lifecycle.mjs';
-const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../background.js'),'utf8').replace(/^import .*?;\n/gm,'');
+import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../src/capture/capture-plan.mjs';
+import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../src/capture/capture-lifecycle.mjs';
+const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../src/background/background.js'),'utf8').replace(/^import .*?;\n/gm,'');
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 test('worker rejects concurrent delayed capture, allows cancel/retry without stale preview',async()=>{
   let listener, tabRemoved, captures=0, previews=0;
@@ -23,7 +23,7 @@ test('worker rejects concurrent delayed capture, allows cancel/retry without sta
   };
   const context=vm.createContext({chrome,crypto:{randomUUID:()=>String(previews).padStart(36,'0')},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune});
   vm.runInContext(source,context);
-  const send=m=>new Promise(resolve=>listener(m,{id:'test',url:'chrome-extension://test/popup.html'},resolve));
+  const send=m=>new Promise(resolve=>listener(m,{id:'test',url:'chrome-extension://test/src/popup/popup.html'},resolve));
   assert.equal((await send({type:'START',mode:'visible',tabId:1,timer:10})).ok,true);
   assert.equal((await send({type:'STATUS'})).state,'capturing');
   assert.equal((await send({type:'START',mode:'visible',tabId:1})).ok,false);

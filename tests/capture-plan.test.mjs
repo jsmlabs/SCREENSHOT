@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {timerSeconds, captureBounds, tilePositions, validateFullSize} from '../capture-plan.mjs';
+import {timerSeconds, captureBounds, tilePositions, validateFullSize} from '../src/capture/capture-plan.mjs';
 test('Only approved timer delays accepted',()=>{
   for(const t of [0,3,5,10])assert.equal(timerSeconds(t),t);
   for(const t of [-1,2,11,3.5,'5',null,Infinity])assert.throws(()=>timerSeconds(t));

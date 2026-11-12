@@ -1,13 +1,13 @@
-import {resolveLanguage,browserLanguages,applyTranslations,translate,translateError} from './i18n.mjs';
-import {copyPngToClipboard} from './clipboard.mjs';
-import {createAutomaticClipboard} from './clipboard-flow.mjs';
+import {resolveLanguage,browserLanguages,applyTranslations,translate,translateError} from '../shared/i18n.mjs';
+import {copyPngToClipboard} from '../shared/clipboard.mjs';
+import {createAutomaticClipboard} from '../shared/clipboard-flow.mjs';
 import {MIN_ZOOM, MAX_ZOOM, clamp, fitScale, anchoredPan, imagePosition} from './viewport.mjs';
 import {initialEdit, createHistory, current, commit, undo, redo, canUndo, canRedo, cloneEdit, applyCrop, addAnnotation, boundedPoint, rectBetween, localToSource} from './edit-model.mjs';
 import {findAnnotation,annotationBounds,translateAnnotation,moveAnnotation,removeAnnotation,patchAnnotation,resizeAnnotation} from './edit-objects.mjs';
 import {paintAnnotation, renderEdit} from './edit-render.mjs';
 import {TOOLS,strokeWidth,toolForKey,shouldHandleShortcut,normalisedWheelDelta,sameCrop} from './editor-interactions.mjs';
-import {SETTINGS_KEY,normalizeSettings,safeFilename,keysToPrune} from './preferences.mjs';
-import {findCaptureTab, isCaptureMode} from './new-capture.mjs';
+import {SETTINGS_KEY,normalizeSettings,safeFilename,keysToPrune} from '../shared/preferences.mjs';
+import {findCaptureTab, isCaptureMode} from '../capture/new-capture.mjs';
 
 const $ = id => document.getElementById(id);
 let language='en';

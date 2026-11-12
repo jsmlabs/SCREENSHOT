@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-const source = readFileSync(new URL('../background.js', import.meta.url),'utf8');
+const source = readFileSync(new URL('../src/background/background.js', import.meta.url),'utf8');
 const openPreviewSource = source.slice(source.indexOf('let previewQueue ='),source.indexOf('\nasync function run('));
 
 function harness(initial=[]) {
@@ -35,14 +35,14 @@ test('concurrent preview requests create only one editor window',async()=>{
 
 test('existing editor is reused and focused; redundant editor tabs are removed without closing browser windows',async()=>{
   const app=harness([
-    {id:9,tabs:[{id:10,url:'https://example.com'},{id:11,url:'chrome-extension://test/editor.html?id=old'}]},
-    {id:12,tabs:[{id:13,url:'chrome-extension://test/editor.html?window=1'}]}
+    {id:9,tabs:[{id:10,url:'https://example.com'},{id:11,url:'chrome-extension://test/src/editor/editor.html?id=old'}]},
+    {id:12,tabs:[{id:13,url:'chrome-extension://test/src/editor/editor.html?window=1'}]}
   ]);
   await app.openPreview('?id=latest');
   assert.equal(app.events.filter(e=>e[0]==='create').length,0);
   assert.deepEqual(app.events.filter(e=>e[0]==='remove').map(e=>e[1]),[13]);
   assert.equal(app.windows[0].tabs[0].url,'https://example.com');
-  assert.equal(app.windows[0].tabs[1].url,'chrome-extension://test/editor.html?id=latest');
+  assert.equal(app.windows[0].tabs[1].url,'chrome-extension://test/src/editor/editor.html?id=latest');
   assert.equal(app.windows[1].tabs.length,0);
   assert.ok(app.events.some(e=>e[0]==='focus'&&e[1]===9));
 });
@@ -54,8 +54,8 @@ test('a closed editor tab is skipped and a second existing editor is reused',asy
   const js=openPreviewSource;
   const events=[];
   const chrome={runtime:{getURL:p=>'chrome-extension://test/'+p},
-    windows:{getAll:async()=>[{id:9,tabs:[{id:11,url:'chrome-extension://test/editor.html'}]},
-      {id:12,tabs:[{id:13,url:'chrome-extension://test/editor.html'}]}],
+    windows:{getAll:async()=>[{id:9,tabs:[{id:11,url:'chrome-extension://test/src/editor/editor.html'}]},
+      {id:12,tabs:[{id:13,url:'chrome-extension://test/src/editor/editor.html'}]}],
       create:async()=>{throw Error('Must not open a new window');},
       update:async id=>{events.push(['focus',id]);}},
     tabs:{update:async id=>{events.push(['update',id]);if(id===11)throw Error('No tab with id');},
@@ -69,7 +69,7 @@ test('a closed editor tab is skipped and a second existing editor is reused',asy
 test('duplicate editor cleanup failure does not invalidate successful reuse',async()=>{
   const events=[];
   const chrome={runtime:{getURL:p=>'chrome-extension://test/'+p},
-    windows:{getAll:async()=>[{id:1,tabs:[{id:2,url:'chrome-extension://test/editor.html'},{id:3,url:'chrome-extension://test/editor.html'}]}],
+    windows:{getAll:async()=>[{id:1,tabs:[{id:2,url:'chrome-extension://test/src/editor/editor.html'},{id:3,url:'chrome-extension://test/src/editor/editor.html'}]}],
       create:async()=>{throw Error('Must reuse editor');},update:async()=>{}},
     tabs:{update:async id=>{events.push(['update',id]);},remove:async id=>{events.push(['remove',id]);throw Error('Tab closed');}}};
   const context=vm.createContext({chrome,console,Promise,Number});vm.runInContext(openPreviewSource,context);

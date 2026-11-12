@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {assertCaptureSource} from '../capture-source.mjs';
-import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../capture-lifecycle.mjs';
-import {pageMetricsStable,totalCaptureBytes} from '../capture-integrity.mjs';
-import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../capture-plan.mjs';
-import {isTrustedUiSender,isSelectionSender} from '../message-policy.mjs';
-import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../preferences.mjs';
+import {assertCaptureSource} from '../src/capture/capture-source.mjs';
+import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../src/capture/capture-lifecycle.mjs';
+import {pageMetricsStable,totalCaptureBytes} from '../src/capture/capture-integrity.mjs';
+import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../src/capture/capture-plan.mjs';
+import {isTrustedUiSender,isSelectionSender} from '../src/shared/message-policy.mjs';
+import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../src/shared/preferences.mjs';
 
 const tab={id:3,windowId:6,active:true,url:'https://example.com/a#before'};
 test('only active, accessible HTTP(S) tabs can be captured',()=>{
@@ -33,9 +33,9 @@ function boot({capturePng, storePng}={}){
     windows:{getAll:async()=>[],create:async()=>{previews++;return{id:13};},update:async()=>{}}
   };
   const sandbox={chrome,crypto:{randomUUID:()=> 'b'.repeat(36)},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune};
-  const source=readFileSync(new URL('../background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,'');
+  const source=readFileSync(new URL('../src/background/background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,'');
   vm.runInNewContext(source,sandbox);
-  const send=m=>new Promise(resolve=>handle(m,{id:'test',url:'chrome-extension://test/editor.html'},resolve));
+  const send=m=>new Promise(resolve=>handle(m,{id:'test',url:'chrome-extension://test/src/editor/editor.html'},resolve));
   return {send, setTab:v=>{current=v;},get captures(){return captures;},get previews(){return previews;},get records(){return records;}};
 }
 const settle=()=>new Promise(resolve=>setTimeout(resolve,35));
@@ -74,8 +74,8 @@ test('failed capture keeps prior history rather than pruning it at the retention
     windows:{getAll:async()=>[],create:async()=>({id:14}),update:async()=>{}}
   };
   const sandbox={chrome,crypto:{randomUUID:()=> 'b'.repeat(36)},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune};
-  vm.runInNewContext(readFileSync(new URL('../background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,''),sandbox);
-  await new Promise(resolve=>handler({type:'START',mode:'visible',tabId:3},{id:'test',url:'chrome-extension://test/editor.html'},resolve));
+  vm.runInNewContext(readFileSync(new URL('../src/background/background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,''),sandbox);
+  await new Promise(resolve=>handler({type:'START',mode:'visible',tabId:3},{id:'test',url:'chrome-extension://test/src/editor/editor.html'},resolve));
   await new Promise(resolve=>setTimeout(resolve,140));
   assert.ok(existing[old], 'Existing capture must survive a failed new attempt');
   assert.match(existing['capture:'+'b'.repeat(36)]?.error||'',/image processing failed/);

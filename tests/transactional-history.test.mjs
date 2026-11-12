@@ -1,17 +1,17 @@
-import {assertCaptureSource} from '../capture-source.mjs';
+import {assertCaptureSource} from '../src/capture/capture-source.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../capture-lifecycle.mjs';
-import {pageMetricsStable,totalCaptureBytes} from '../capture-integrity.mjs';
-import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../capture-plan.mjs';
-import {isTrustedUiSender,isSelectionSender} from '../message-policy.mjs';
-import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../preferences.mjs';
+import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../src/capture/capture-lifecycle.mjs';
+import {pageMetricsStable,totalCaptureBytes} from '../src/capture/capture-integrity.mjs';
+import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../src/capture/capture-plan.mjs';
+import {isTrustedUiSender,isSelectionSender} from '../src/shared/message-policy.mjs';
+import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../src/shared/preferences.mjs';
 
 function harness({failSet=false,failPreview=false}={}) {
   const oldKey='capture:'+'a'.repeat(36);
-  const store={[SETTINGS_KEY]:{historyLimit:1,historyDays:7},[oldKey]:{data:'data:image/png;base64,aGVsbG8=',created:Date.now(),mode:'visible'}};
+  const store={[SETTINGS_KEY]:{historyLimit:1,historyDays:7},[oldKey]:{data:'data:image/png;base64,aGVsbG8=',created:Date.now()-1000,mode:'visible'}};
   let previews=0;
   const chrome={
     runtime:{id:'test',getURL:p=>'chrome-extension://test/'+p,onMessage:{addListener:()=>{}}},
@@ -21,7 +21,7 @@ function harness({failSet=false,failPreview=false}={}) {
   };
   const sandbox={chrome,crypto:{randomUUID:()=> 'b'.repeat(36)},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune};
   const context=vm.createContext(sandbox);
-  const source=readFileSync(new URL('../background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,'');
+  const source=readFileSync(new URL('../src/background/background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,'');
   vm.runInContext(source+'\nglobalThis.__publishCapture = publishCapture;',context);
   return {publish:()=>context.__publishCapture({data:'data:image/png;base64,aGVsbG8=',mode:'visible'}),store,oldKey,get previews(){return previews;}};
 }

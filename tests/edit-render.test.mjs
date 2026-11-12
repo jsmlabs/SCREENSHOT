@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {renderEdit,paintAnnotation} from '../edit-render.mjs';
-import {initialEdit,applyCrop,addAnnotation} from '../edit-model.mjs';
+import {renderEdit,paintAnnotation} from '../src/editor/edit-render.mjs';
+import {initialEdit,applyCrop,addAnnotation} from '../src/editor/edit-model.mjs';
 function ctxStub(){
   const calls=[];
   const ctx={canvas:{width:0,height:0}};

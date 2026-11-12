@@ -22,7 +22,7 @@ try:
         page.add_init_script("window.chrome={storage:{local:{get:async key=>({[key]:{data:" + json.dumps(data) + ",created:Date.now(),mode:'visible'}})}}};")
         errors=[]
         page.on('pageerror',lambda e: errors.append(str(e)))
-        page.goto(f'http://127.0.0.1:{server.server_port}/editor.html?id={identifier}')
+        page.goto(f'http://127.0.0.1:{server.server_port}/src/editor/editor.html?id={identifier}')
         page.locator('#preview:not([hidden])').wait_for()
         assert '400 × 300' in page.locator('#notice').inner_text()
         assert page.locator('#undo').is_disabled()

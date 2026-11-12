@@ -1,16 +1,16 @@
-import {assertCaptureSource} from '../capture-source.mjs';
-import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../preferences.mjs';
-import {pageMetricsStable,totalCaptureBytes} from '../capture-integrity.mjs';
+import {assertCaptureSource} from '../src/capture/capture-source.mjs';
+import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../src/shared/preferences.mjs';
+import {pageMetricsStable,totalCaptureBytes} from '../src/capture/capture-integrity.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname,resolve} from 'node:path';
-import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../capture-plan.mjs';
-import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../capture-lifecycle.mjs';
-import {isTrustedUiSender,isSelectionSender} from '../message-policy.mjs';
-const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../background.js'),'utf8').replace(/^import .*?;\n/gm,'');
+import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../src/capture/capture-plan.mjs';
+import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../src/capture/capture-lifecycle.mjs';
+import {isTrustedUiSender,isSelectionSender} from '../src/shared/message-policy.mjs';
+const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../src/background/background.js'),'utf8').replace(/^import .*?;\n/gm,'');
 test('Untrusted runtime messages cannot start, cancel or open capture window',async()=>{
   let handler, called=0;
   const chrome={

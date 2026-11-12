@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fitScale,constrainPan,anchoredPan,axisLimit,imagePosition,PREVIEW_GAP,clamp,MIN_ZOOM,MAX_ZOOM} from '../viewport.mjs';
+import {fitScale,constrainPan,anchoredPan,axisLimit,imagePosition,PREVIEW_GAP,clamp,MIN_ZOOM,MAX_ZOOM} from '../src/editor/viewport.mjs';
 
 test('Fit never upscales and ignores invalid geometry', () => {
   assert.equal(fitScale(2000,1000,500,500),.25);
