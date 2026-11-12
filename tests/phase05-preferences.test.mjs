@@ -9,9 +9,9 @@ const record=(age,mode='visible')=>({created:now-age,mode,data:'data:image/png;b
 test('defaults are private, bounded, and optional auto-save starts disabled',()=>{
  assert.deepEqual(normalizeSettings({}),DEFAULT_SETTINGS);
  assert.equal(SETTINGS_KEY,'settings:v1');
- assert.equal(normalizeSettings({autoSave:'true',timer:99,historyLimit:1000,historyDays:30}).autoSave,false);
- assert.deepEqual(normalizeSettings({autoSave:'true',timer:99,historyLimit:1000,historyDays:30}),DEFAULT_SETTINGS);
- assert.deepEqual(normalizeSettings({timer:3,autoSave:true,historyLimit:5,historyDays:7,language:'auto'}),{timer:3,autoSave:true,historyLimit:5,historyDays:7,language:'auto'});
+ assert.equal(normalizeSettings({autoSave:'true',timer:99,historyLimit:1000,historyDays:999}).autoSave,false);
+ assert.deepEqual(normalizeSettings({autoSave:'true',timer:99,historyLimit:1000,historyDays:999}),DEFAULT_SETTINGS);
+ assert.deepEqual(normalizeSettings({timer:3,autoSave:true,historyLimit:5,historyDays:7,language:'auto'}),{timer:3,autoSave:true,historyLimit:5,historyDays:7,language:'auto',exportPrefix:'screenshot',exportAskWhere:false});
  assert.equal(safeFilename(new Date('2026-11-11T18:00:01Z')),'screenshot-2026-11-11T18-00-01-000Z.png');
 });
 test('local history discards expired, malformed, error and excess records deterministically',()=>{
@@ -47,7 +47,7 @@ test('worker restricts history access to trusted extension UI, respects bounded 
 test('editor auto-save is opt-in and requests downloads only after full preview render',()=>{
  const js=read('editor.js');
  assert.match(js,/normalizeSettings\(stored\[SETTINGS_KEY\]\)\.autoSave/);
- assert.match(js,/chrome\.downloads\.download\(\{url:data,filename:safeFilename\(\),saveAs:false,conflictAction:'uniquify'\}\)/);
+ assert.match(js,/chrome\.downloads\.download\(\{url:data,filename:safeFilename\(new Date\(\),normalizeSettings/);
  assert.match(js,/render\(\(\) => \{scheduleAutomaticCopy\(value\);if\(new URLSearchParams\(location.search\).get\('fresh'\)==='1'\)void autoSaveOriginal\(value\);\}\)/);
  assert.match(js,/autoSaved=true/);
 });

@@ -1,3 +1,4 @@
+import {assertCaptureSource} from '../capture-source.mjs';
 import {SETTINGS_KEY,normalizeSettings,keysToPrune} from '../preferences.mjs';
 import {pageMetricsStable,totalCaptureBytes} from '../capture-integrity.mjs';
 import test from 'node:test';
@@ -18,7 +19,7 @@ test('Untrusted runtime messages cannot start, cancel or open capture window',as
     windows:{create:async()=>{called++;return{id:1};}},
     tabs:{onRemoved:{addListener:()=>{}}}
   };
-  vm.runInNewContext(source,{chrome,console,Date,Number,Math,Promise,setTimeout,clearTimeout,AbortController,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune});
+  vm.runInNewContext(source,{chrome,console,Date,Number,Math,Promise,setTimeout,clearTimeout,AbortController,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune});
   const send=(type,sender)=>new Promise(resolve=>handler({type,mode:'visible',tabId:1},sender,resolve));
   for(const type of ['START','CANCEL_CAPTURE','STATUS','OPEN_WINDOW_PREVIEW']){
     const response=await send(type,{id:'test',tab:{id:1},url:'https://example.org',frameId:0});

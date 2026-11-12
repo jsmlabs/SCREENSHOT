@@ -259,3 +259,122 @@ html,body{max-width:100%}
 .new-capture-error{margin:12px 0 0;font-size:12px;color:var(--danger);line-height:1.5}
 .new-capture-error[hidden]{display:none}
 .editor .toolbar-actions #new-capture{font-weight:650}
+
+
+/* SCREENSHOT 1.15.0 - Premium interface layer. Theme aware, responsive, accessible. */
+:root {
+  --ui-shadow:0 10px 30px #00000024;
+  --ui-ring:color-mix(in srgb,var(--focus) 24%,transparent);
+  --ui-subtle:color-mix(in srgb,var(--text) 3%,var(--surface));
+  --ui-selected:color-mix(in srgb,var(--focus) 13%,var(--surface));
+  --ui-transition:160ms cubic-bezier(.2,.8,.2,1);
+}
+body{letter-spacing:.002em;-webkit-font-smoothing:antialiased}
+button,select,input{touch-action:manipulation}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,.image-viewport:focus-visible{
+  outline:2px solid var(--focus);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-ring)
+}
+.popup{width:384px;max-height:min(650px,100dvh);background:var(--bg)}
+.popup-header{height:74px;padding:14px 20px;background:var(--bg)}
+.mark,.editor-mark{height:37px;width:37px;border-radius:12px;box-shadow:0 2px 8px #0002}
+.mark .ui-icon,.editor-mark .ui-icon{width:19px;height:19px}
+.brand strong,.editor-brand strong{font-size:13px;font-weight:760;letter-spacing:.065em}
+.brand small,.editor-brand small{font-size:11px;margin-top:3px}
+.version{font-size:10px;font-weight:650;padding:4px 8px;background:var(--surface)}
+.popup-content{padding:18px 18px 12px;scrollbar-gutter:stable}
+.popup-intro{font-size:16px;letter-spacing:-.025em;font-weight:680;margin:0 3px 18px}
+.popup .section-heading{font-size:10px;letter-spacing:.1em;margin:0 3px 9px}
+.popup .capture-options{gap:7px}
+.popup .capture-options button{min-height:63px;border:1px solid var(--border);background:var(--surface);padding:10px 12px;border-radius:12px;transition:background var(--ui-transition),border-color var(--ui-transition),box-shadow var(--ui-transition),transform var(--ui-transition)}
+.popup .capture-options button:hover:not(:disabled){background:var(--surface-hover);border-color:color-mix(in srgb,var(--focus) 48%,var(--border));box-shadow:var(--ui-shadow);transform:translateY(-1px)}
+.popup .capture-options button:active:not(:disabled){transform:translateY(0)}
+.popup .capture-options button:focus-visible{background:var(--ui-selected);border-color:var(--focus)}
+.popup .capture-options .glyph{height:40px;width:40px;border-radius:10px;background:var(--raised);border-color:transparent}
+.popup .capture-options button:hover:not(:disabled) .glyph{background:var(--ui-selected);color:var(--focus)}
+.popup .option-text b{font-size:13px;font-weight:670}
+.popup .option-text small{font-size:11px;line-height:1.4}
+.popup .arrow{font-size:20px;opacity:.65}
+.popup .capture-settings{margin-top:16px;padding:16px 3px 4px;gap:12px}
+.popup .timer-option select,.setting-row select{min-height:36px;border-radius:9px}
+.popup .clipboard-feature{max-width:none;line-height:1.45}
+.popup .productivity-panel{margin-top:14px;border:1px solid var(--border);border-radius:11px;background:var(--surface);overflow:visible}
+.popup .productivity-panel>summary{padding:12px 14px;min-height:54px;gap:8px}
+.popup .productivity-panel>summary:hover{background:var(--surface-hover);border-radius:11px}
+.popup .productivity-fields{padding:8px 14px 17px;gap:14px}
+.popup .productivity-panel .setting-row{flex-wrap:wrap}
+.popup .productivity-panel .setting-row select{max-width:205px}
+.popup .history-panel{padding:18px 2px 5px}
+.popup .history-list{max-height:175px}
+.popup .history-item{border-radius:10px;transition:border-color var(--ui-transition)}
+.popup .history-item:focus-within{border-color:var(--focus)}
+.popup .history-open{padding:11px 12px}
+.popup .history-delete{min-width:40px;min-height:40px;border-radius:0 10px 10px 0}
+.popup .history-delete:hover{background:color-mix(in srgb,var(--danger) 12%,var(--surface))}
+.popup .empty-history{padding:14px;border:1px dashed var(--border);border-radius:10px;text-align:center;background:var(--ui-subtle);margin:0}
+.popup footer{padding:13px 20px;background:var(--bg)}
+/* The editor stays spacious on desktop and scrolls individual tool groups on narrow viewports. */
+.editor .toolbar{min-height:72px;padding:13px 22px;gap:16px;background:var(--bg)}
+.editor .toolbar-actions{gap:9px}
+.editor .toolbar-actions button{min-height:38px;padding:8px 14px;border-radius:10px}
+.editor .toolbar-actions #new-capture{background:var(--surface);border-color:var(--border)}
+.editor .toolbar-actions #new-capture:hover{border-color:var(--focus);background:var(--ui-selected)}
+.editor .workspace-toolbar{background:var(--surface)}
+.editor .edit-controls{padding:11px 18px;gap:10px;max-height:min(35vh,230px)}
+.editor .tool-group{gap:4px}
+.editor .edit-controls .tool{border-radius:9px;min-height:38px;padding:8px 10px;transition:background var(--ui-transition),border-color var(--ui-transition)}
+.editor .edit-controls .tool.active{background:var(--ui-selected);border-color:color-mix(in srgb,var(--focus) 60%,var(--border));box-shadow:inset 0 0 0 1px var(--ui-ring)}
+.editor .edit-controls .tool:hover:not(:disabled){background:var(--raised)}
+.editor .edit-controls .tool.active:hover{background:var(--ui-selected)}
+.editor .tool-group+.tool-group{padding-left:12px}
+.editor .view-controls{padding:8px 18px;background:var(--bg)}
+.editor .view-control-buttons button{min-height:34px;border-radius:9px}
+.editor .view-control-buttons output{font-variant-numeric:tabular-nums}
+.editor .notice{padding:9px 20px;min-height:38px;background:var(--bg)}
+.editor .stage{margin:14px 16px 16px;border-radius:14px;box-shadow:inset 0 0 0 1px #0001}
+.editor .image-viewport img{box-shadow:0 16px 44px #0005}
+.editor .shortcut-panel{width:min(340px,calc(100vw - 28px));grid-template-columns:1fr 1fr;gap:10px;border-radius:12px;box-shadow:0 20px 60px #0007}
+.editor .shortcut-panel span{white-space:normal;line-height:1.45}
+.editor .new-capture-dialog{width:min(430px,calc(100vw - 28px));padding:22px;border-radius:18px;box-shadow:0 28px 85px #0009}
+.editor .new-capture-heading strong{font-size:18px}
+.editor .new-capture-modes{gap:8px}
+.editor .new-capture-modes button{border-radius:11px;min-height:65px;padding:12px 15px;transition:background var(--ui-transition),border-color var(--ui-transition)}
+.editor .new-capture-modes button:hover:not(:disabled){background:var(--ui-selected);border-color:var(--focus)}
+@media(max-width:900px){.editor .edit-controls{gap:8px;padding:9px 11px}.editor .tool-group+.tool-group{padding-left:8px}}
+@media(max-width:680px){
+  .editor .toolbar{min-height:62px;padding:9px 12px;gap:8px}
+  .editor .toolbar-actions{gap:5px}
+  .editor .toolbar-actions button{min-height:36px;padding:6px 9px}
+  .editor .edit-controls{max-height:min(30vh,175px);overflow-y:auto;align-content:start}
+  .editor .edit-controls .tool{width:38px;justify-content:center;padding:8px}
+  .editor .edit-controls .tool span{display:none}
+  .editor .view-controls{padding:6px 11px}
+  .editor .stage{margin:8px;border-radius:10px}
+}
+@media(max-width:440px){
+  .popup{width:100vw;max-width:100vw}
+  .popup-content{padding:14px 12px 10px}
+  .popup-header{padding:12px 14px}
+  .popup .capture-options button{min-height:58px}
+  .editor .toolbar-actions button{width:36px;min-width:36px;padding:7px}
+  .editor .toolbar-actions button span{display:none}
+  .editor .toolbar-actions #window:not([hidden]){width:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  .popup .capture-options button,.editor .edit-controls .tool,.editor .new-capture-modes button{transition:none!important;transform:none!important}
+}
+@media(forced-colors:active){
+  .popup .capture-options button,.editor .edit-controls .tool.active,.editor .new-capture-modes button{border:1px solid ButtonText}
+  .popup .capture-options button:focus-visible,.editor .edit-controls .tool.active{outline:2px solid Highlight}
+}
+
+/* Phase 05: compact and accessible library actions */
+.popup .library-controls{display:grid;gap:7px;margin:8px 0}
+.popup .library-controls input[type=search],.popup #export-prefix{box-sizing:border-box;min-width:0;width:100%;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:8px;padding:9px;font:inherit}
+.popup .library-filter{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+.popup .library-meta{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted);margin:6px 1px}
+.popup .history-list{max-height:230px}
+.popup .history-actions{display:flex;align-items:stretch;flex-shrink:0}
+.popup .history-actions button{background:transparent;border:0;color:var(--muted);min-height:36px;min-width:27px;cursor:pointer;font-size:16px}
+.popup .history-actions button:hover{color:var(--text);background:var(--surface-hover,var(--surface))}
+.popup .history-actions button:focus-visible,.popup .library-controls input:focus-visible,.popup #export-prefix:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+@media(max-width:360px){.popup .history-actions button{min-width:24px}.popup .history-open{padding:8px}}

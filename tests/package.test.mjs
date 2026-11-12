@@ -6,9 +6,9 @@ import {dirname,resolve} from 'node:path';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>readFileSync(resolve(root,name),'utf8');
 const manifest=JSON.parse(read('manifest.json'));
-test('MV3 manifest, v1.12.0, valid local entrypoints',()=>{
+test('MV3 manifest, v1.18.0, valid local entrypoints',()=>{
   assert.equal(manifest.manifest_version,3);
-  assert.equal(manifest.version,'1.12.0');
+  assert.equal(manifest.version,'1.18.0');
   for(const name of [manifest.background.service_worker,manifest.action.default_popup,'editor.html','offscreen.html'])assert.ok(existsSync(resolve(root,name)),name);
 });
 test('No external scripts or host-wide permissions',()=>{
@@ -88,7 +88,7 @@ test('v1.6 cancellation UI and bounded browser operations are integrated',()=>{
   for(const operation of ['STATUS','CANCEL_CAPTURE','CANCEL_SELECTION']) assert.match(read('background.js'),new RegExp(operation));
   assert.match(read('background.js'),/withTimeout\(\(\) => chrome\.tabs\.captureVisibleTab/);
   assert.match(read('background.js'),/withTimeout\(\(\) => chrome\.runtime\.sendMessage/);
-  assert.match(read('background.js'),/finally \{ lifecycle\.finish\(job\); \}/);
+  assert.match(read('background.js'),/finally \{ lifecycle\.finish\(job\); runningJobs--; \}/);
 });
 
 test('v1.7 pixel-fidelity renderer uses bounded source rectangles and image cleanup',()=>{

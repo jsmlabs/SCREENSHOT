@@ -22,6 +22,6 @@ test('failed preference writes restore displayed values, not just internal setti
 });
 test('UI version matches extension manifest',()=>{
   const manifest=JSON.parse(read('manifest.json'));
-  assert.equal(manifest.version,'1.12.0');
-  assert.match(read('popup.html'),/v1\.12\.0/);
+  assert.equal(manifest.version,'1.18.0');
+  assert.match(read('popup.html'),/v1\.18\.0/);
 });

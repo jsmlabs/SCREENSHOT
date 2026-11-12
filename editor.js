@@ -1,9 +1,9 @@
-import {resolveLanguage,browserLanguages,applyTranslations,translate} from './i18n.mjs';
+import {resolveLanguage,browserLanguages,applyTranslations,translate,translateError} from './i18n.mjs';
 import {copyPngToClipboard} from './clipboard.mjs';
 import {createAutomaticClipboard} from './clipboard-flow.mjs';
 import {MIN_ZOOM, MAX_ZOOM, clamp, fitScale, anchoredPan, imagePosition} from './viewport.mjs';
 import {initialEdit, createHistory, current, commit, undo, redo, canUndo, canRedo, cloneEdit, applyCrop, addAnnotation, boundedPoint, rectBetween, localToSource} from './edit-model.mjs';
-import {findAnnotation,annotationBounds,translateAnnotation,moveAnnotation,removeAnnotation,patchAnnotation} from './edit-objects.mjs';
+import {findAnnotation,annotationBounds,translateAnnotation,moveAnnotation,removeAnnotation,patchAnnotation,resizeAnnotation} from './edit-objects.mjs';
 import {paintAnnotation, renderEdit} from './edit-render.mjs';
 import {TOOLS,strokeWidth,toolForKey,shouldHandleShortcut,normalisedWheelDelta,sameCrop} from './editor-interactions.mjs';
 import {SETTINGS_KEY,normalizeSettings,safeFilename,keysToPrune} from './preferences.mjs';
@@ -12,8 +12,8 @@ import {findCaptureTab, isCaptureMode} from './new-capture.mjs';
 const $ = id => document.getElementById(id);
 let language='en';
 const t=text=>translate(language,text);
-async function initLanguage(){try{const prefs=(await chrome.storage.local.get(SETTINGS_KEY))[SETTINGS_KEY];language=resolveLanguage(normalizeSettings(prefs).language,browserLanguages());}catch{language=resolveLanguage('auto',browserLanguages());}applyTranslations(document.body,language);}
-void initLanguage();
+async function initLanguage(){try{const prefs=(await chrome.storage.local.get(SETTINGS_KEY))[SETTINGS_KEY];language=resolveLanguage(normalizeSettings(prefs).language,browserLanguages());}catch{language=resolveLanguage('auto',browserLanguages());}applyTranslations(document.body,language);document.title=t('SCREENSHOT - Editor');}
+const languageReady=initLanguage();
 const preview = $('preview'), stage = $('viewport'), notice = $('notice'), overlay = $('overlay');
 const copy = $('copy'), save = $('save'), windowButton = $('window');
 const newCaptureDialog = $('new-capture-dialog'), newCaptureError = $('new-capture-error');
@@ -21,7 +21,7 @@ let captureSourceTabId = null, startingNewCapture = false;
 const zoomIn = $('zoom-in'), zoomOut = $('zoom-out'), fitButton = $('fit'), actualButton = $('actual');
 const zoomValue = $('zoom-value'), undoButton = $('undo'), redoButton = $('redo'), resetButton = $('reset-edit');
 const colorPicker = $('edit-color'), widthPicker = $('edit-width'), toolButtons = [...document.querySelectorAll('[data-tool]')];
-const deleteButton = $('delete-object'), editObjectButton = $('edit-object');
+const deleteButton = $('delete-object'), editObjectButton = $('edit-object'), fontSizePicker = $('edit-font-size');
 let selectedIndex = -1;
 const image = new Image(), outputCanvas = document.createElement('canvas');
 let originalData = null, renderedData = null, history = null;
@@ -30,7 +30,7 @@ let scale = 1, panX = 0, panY = 0, dragging = null, fitMode = true, tool = 'pan'
 let drawGeneration = 0;
 const dimensions = () => ({iw: preview.naturalWidth, ih: preview.naturalHeight, vw: stage.clientWidth, vh: stage.clientHeight});
 function status(message, error = false) {
-  notice.textContent = t(message);
+  notice.textContent = error ? translateError(language,message) : t(message);
   notice.classList.toggle('error', error);
   notice.classList.toggle('success', !error && /(?:automatisch kopiert|in zwischenablage kopiert)/i.test(message));
 }
@@ -70,6 +70,8 @@ function updateControls() {
   for (const button of toolButtons) button.disabled = !history;
   deleteButton.disabled = !history || selectedIndex < 0;
   editObjectButton.disabled = !history || selectedIndex < 0 || activeEdit().annotations[selectedIndex]?.type !== 'text';
+  fontSizePicker.disabled = editObjectButton.disabled;
+  if(!fontSizePicker.disabled){const size=activeEdit().annotations[selectedIndex].fontSize || 22; fontSizePicker.value=String([...fontSizePicker.options].reduce((best,option)=>Math.abs(Number(option.value)-size)<Math.abs(Number(best.value)-size)?option:best).value);}
 }
 function setTool(next) {
   if (!TOOLS.includes(next)) return;
@@ -86,14 +88,14 @@ function setTool(next) {
   $('view-hint').textContent = t(tool === 'pan' ? 'Mausrad: Zoom · Ziehen: Bewegen · Doppelklick: Anpassen' :
     tool === 'crop' ? 'Bereich ziehen: Zuschneiden · Esc: Hand' :
     tool === 'text' ? 'Position anklicken: Text · Esc: Hand' :
-    tool === 'select' ? 'Objekt anklicken und verschieben · Entf: Löschen · Doppelklick: Text bearbeiten' :
+    tool === 'select' ? 'Objekt ziehen: Bewegen · Griff ziehen: Skalieren · Pfeiltasten: 1 px · Shift: 10 px' :
     ['blur','pixelate'].includes(tool) ? 'Bereich ziehen: Bildbereich unkenntlich machen' : 'Ziehen: Annotation · Esc: Hand');
   drawOverlay();
 }
 let clipboardNotice = '';
 let clipboardFailed = false;
 function clipboardFeedback(message, failed = false) {
-  clipboardNotice = message; clipboardFailed = failed; status(message, failed);
+  clipboardNotice = failed ? translateError(language,message) : message; clipboardFailed = failed; status(message, failed);
 }
 // Clipboard writes require a foreground document in Chromium. Never report success
 // before navigator.clipboard.write resolves. Re-focus will retry pending captures.
@@ -150,7 +152,7 @@ async function autoSaveOriginal(data){
     if(!normalizeSettings(stored[SETTINGS_KEY]).autoSave)return;
     // Mark before the async download to avoid duplicate exports from subsequent renders.
     autoSaved=true;
-    await chrome.downloads.download({url:data,filename:safeFilename(),saveAs:false,conflictAction:'uniquify'});
+    await chrome.downloads.download({url:data,filename:safeFilename(new Date(),normalizeSettings(stored[SETTINGS_KEY]).exportPrefix),saveAs:normalizeSettings(stored[SETTINGS_KEY]).exportAskWhere,conflictAction:'uniquify'});
   }catch(error){autoSaved=false;status('Auto-Save fehlgeschlagen: '+(error.message||error),true);}
 }
 function setImage(value) {
@@ -184,7 +186,7 @@ async function load() {
     setImage(stored.data);
   } catch (error) { status(error.message || String(error),true); }
 }
-void load();
+void languageReady.then(load);
 $('new-capture').addEventListener('click', () => {
   newCaptureError.hidden = true;
   newCaptureError.textContent = '';
@@ -217,7 +219,8 @@ for (const button of document.querySelectorAll('[data-new-mode]')) button.addEve
     }
     newCaptureDialog.close();
   } catch(error) {
-    newCaptureError.textContent = t(error.message || 'Die Aufnahme konnte nicht gestartet werden.');
+    console.warn('SCREENSHOT new capture:',error);
+    newCaptureError.textContent = translateError(language,error,'Die Aufnahme konnte nicht gestartet werden.');
     newCaptureError.hidden = false;
   } finally {
     startingNewCapture = false;
@@ -276,10 +279,10 @@ function drawOverlay() {
   ctx.save();ctx.translate(pos.left,pos.top);ctx.scale(scale,scale);
   ctx.beginPath();ctx.rect(0,0,iw,ih);ctx.clip();
   const color=colorPicker.value;
-  if(dragging?.mode==='select' || (!dragging && selectedIndex>=0)) {
+  if(['select','resize'].includes(dragging?.mode) || (!dragging && selectedIndex>=0)) {
     const a = dragging?.candidate || activeEdit().annotations[selectedIndex];
     const bounds=annotationBounds(a);
-    if(bounds){ctx.strokeStyle='#71aaff';ctx.lineWidth=Math.max(1,1.5/scale);ctx.setLineDash([5/scale,3/scale]);ctx.strokeRect(bounds.x-activeEdit().crop.x,bounds.y-activeEdit().crop.y,bounds.w,bounds.h);}
+    if(bounds){ctx.strokeStyle='#71aaff';ctx.lineWidth=Math.max(1,1.5/scale);ctx.setLineDash([5/scale,3/scale]);ctx.strokeRect(bounds.x-activeEdit().crop.x,bounds.y-activeEdit().crop.y,bounds.w,bounds.h);ctx.setLineDash([]);const handle=10/scale;ctx.fillStyle='#71aaff';ctx.fillRect(bounds.x+bounds.w-activeEdit().crop.x-handle/2,bounds.y+bounds.h-activeEdit().crop.y-handle/2,handle,handle);}
   } else if(dragging.mode==='crop') {
     const r=rectBetween(dragging.start,dragging.end);
     ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(1,2/scale);
@@ -326,10 +329,13 @@ stage.addEventListener('pointerdown', event => {
   }
   if(tool==='select') {
     const point=imagePoint(event), source=localToSource(activeEdit(),point);
-    selectedIndex=findAnnotation(activeEdit().annotations,source,7/scale);
+    let handleIndex=-1;
+    if(selectedIndex>=0){const b=annotationBounds(activeEdit().annotations[selectedIndex]);if(b && Math.hypot(source.x-b.x-b.w,source.y-b.y-b.h)<=12/scale)handleIndex=selectedIndex;}
+    selectedIndex=handleIndex>=0?handleIndex:findAnnotation(activeEdit().annotations,source,7/scale);
     updateControls();drawOverlay();
     if(selectedIndex<0)return;
-    dragging={mode:'select',id:event.pointerId,start:source,index:selectedIndex,original:activeEdit().annotations[selectedIndex],candidate:activeEdit().annotations[selectedIndex]};
+    const original=activeEdit().annotations[selectedIndex];
+    dragging={mode:handleIndex>=0?'resize':'select',id:event.pointerId,start:source,index:selectedIndex,original,candidate:original,bounds:annotationBounds(original)};
   } else if(tool==='pan') {
     dragging={mode:'pan',id:event.pointerId,x:event.clientX,y:event.clientY,panX,panY};
   } else {
@@ -342,7 +348,11 @@ stage.addEventListener('pointerdown', event => {
 });
 stage.addEventListener('pointermove', event => {
   if (!dragging || dragging.id !== event.pointerId) return;
-  if(dragging.mode==='select') {
+  if(dragging.mode==='resize') {
+    const source=localToSource(activeEdit(),clampPoint(imagePoint(event)));
+    dragging.candidate=resizeAnnotation(dragging.original,dragging.bounds,source)||dragging.original;
+    drawOverlay();
+  } else if(dragging.mode==='select') {
     const source=localToSource(activeEdit(),clampPoint(imagePoint(event)));
     dragging.candidate=translateAnnotation(dragging.original,source.x-dragging.start.x,source.y-dragging.start.y);
     drawOverlay();
@@ -358,11 +368,19 @@ stage.addEventListener('pointermove', event => {
 });
 function stopDrag(event, cancel=false) {
   if (!dragging || event.pointerId!==dragging.id)return;
-  if(!cancel && dragging.mode!=='pan'){const p=clampPoint(imagePoint(event));dragging.end=p;if(dragging.mode==='pen')dragging.points.push(p);if(dragging.mode==='select'){const source=localToSource(activeEdit(),p);dragging.candidate=translateAnnotation(dragging.original,source.x-dragging.start.x,source.y-dragging.start.y);}}
+  if(!cancel && dragging.mode!=='pan'){const p=clampPoint(imagePoint(event));dragging.end=p;if(dragging.mode==='pen')dragging.points.push(p);if(dragging.mode==='select'){const source=localToSource(activeEdit(),p);dragging.candidate=translateAnnotation(dragging.original,source.x-dragging.start.x,source.y-dragging.start.y);}if(dragging.mode==='resize'){const source=localToSource(activeEdit(),p);dragging.candidate=resizeAnnotation(dragging.original,dragging.bounds,source)||dragging.original;}}
   const completed=dragging;dragging=null;stage.classList.remove('dragging');
   if(stage.hasPointerCapture(event.pointerId))stage.releasePointerCapture(event.pointerId);
   drawOverlay();
   if(cancel || completed.mode==='pan')return;
+  if(completed.mode==='resize'){
+    if(completed.candidate && JSON.stringify(completed.candidate)!==JSON.stringify(completed.original)){
+      // The preview is validated by resizeAnnotation; committing only on release
+      // produces a single undo step, even after hundreds of pointer moves.
+      const changed={...activeEdit(),annotations:activeEdit().annotations.map((a,i)=>i===completed.index?completed.candidate:a)};
+      commitEdit(changed);selectedIndex=completed.index;updateControls();
+    }drawOverlay();return;
+  }
   if(completed.mode==='select'){
     if(completed.candidate && JSON.stringify(completed.candidate)!==JSON.stringify(completed.original)){
       const moved=moveAnnotation(activeEdit(),completed.index,completed.candidate.x !== undefined ? completed.candidate.x-completed.original.x : completed.candidate.points[0].x-completed.original.points[0].x, completed.candidate.y !== undefined ? completed.candidate.y-completed.original.y : completed.candidate.points[0].y-completed.original.points[0].y);
@@ -393,6 +411,9 @@ window.addEventListener('keydown',event=>{
     event.preventDefault();navigateHistory(1);return;
   }
   if(event.key==='Escape'){setTool('pan');return;}
+  if(tool==='select' && selectedIndex>=0 && !event.ctrlKey && !event.metaKey && !event.altKey && /^Arrow(Left|Right|Up|Down)$/.test(event.key)){
+    event.preventDefault();const amount=event.shiftKey?10:1;const delta={ArrowLeft:[-amount,0],ArrowRight:[amount,0],ArrowUp:[0,-amount],ArrowDown:[0,amount]}[event.key];const index=selectedIndex;const moved=moveAnnotation(activeEdit(),index,...delta);if(moved){commitEdit(moved);selectedIndex=index;updateControls();drawOverlay();}return;
+  }
   if(tool==='select' && selectedIndex>=0 && (event.key==='Delete'||event.key==='Backspace')){event.preventDefault();deleteSelected();return;}
   if(!shouldHandleShortcut(document.activeElement,event))return;
   const selectedTool=toolForKey(event.key);
@@ -408,6 +429,7 @@ window.addEventListener('keydown',event=>{
 function deleteSelected(){if(!history||selectedIndex<0)return;const next=removeAnnotation(activeEdit(),selectedIndex);if(next){commitEdit(next);setTool('select');}}
 function editSelectedText(){const a=activeEdit()?.annotations[selectedIndex];if(a?.type!=='text')return;const text=window.prompt(t('Text bearbeiten (max. 200 Zeichen):'),a.text);if(text?.trim()){const next=patchAnnotation(activeEdit(),selectedIndex,{text:text.slice(0,200)});if(next){const index=selectedIndex;commitEdit(next);setTool('select');selectedIndex=index;updateControls();drawOverlay();}}}
 deleteButton.addEventListener('click',deleteSelected);
+fontSizePicker.addEventListener('change',()=>{if(tool!=='select'||selectedIndex<0)return;const index=selectedIndex;const next=patchAnnotation(activeEdit(),index,{fontSize:Number(fontSizePicker.value)});if(next){commitEdit(next);setTool('select');selectedIndex=index;updateControls();drawOverlay();}});
 editObjectButton.addEventListener('click',editSelectedText);
 colorPicker.addEventListener('change',()=>{if(tool!=='select'||selectedIndex<0)return;const index=selectedIndex,next=patchAnnotation(activeEdit(),index,{color:colorPicker.value});if(next){commitEdit(next);setTool('select');selectedIndex=index;updateControls();drawOverlay();}});
 widthPicker.addEventListener('change',()=>{if(tool!=='select'||selectedIndex<0)return;const index=selectedIndex,next=patchAnnotation(activeEdit(),index,{width:strokeWidth(widthPicker.value)});if(next){commitEdit(next);setTool('select');selectedIndex=index;updateControls();drawOverlay();}});
@@ -420,7 +442,7 @@ windowButton.addEventListener('click',async()=>{
     const video=document.createElement('video');video.srcObject=stream;video.muted=true;
     await video.play();if(!video.videoWidth||!video.videoHeight)throw new Error('Fensterbild ist noch nicht verfügbar.');
     const timer = Number(new URLSearchParams(location.search).get('timer') || 0);
-    if ([3,5,10].includes(timer)) { status('Fensteraufnahme in ' + timer + ' Sekunden ...'); await new Promise(resolve => setTimeout(resolve, timer * 1000)); }
+    if ([3,5,10].includes(timer)) { status(`${t('Fensteraufnahme in')} ${timer} ${t('Sekunden ...')}`); await new Promise(resolve => setTimeout(resolve, timer * 1000)); }
     const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;
     const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas nicht verfügbar.');
     ctx.drawImage(video,0,0);
@@ -435,13 +457,17 @@ windowButton.addEventListener('click',async()=>{
       if(expired.length)await chrome.storage.local.remove(expired);
     } catch (storageError) { console.warn('SCREENSHOT local history:',storageError); }
     setImage(data);
-  } catch(error){status('Fensteraufnahme: '+(error.message||error),true);}
+  } catch(error){console.warn('SCREENSHOT window capture:',error);status(error,true);}
   finally{stream?.getTracks().forEach(track=>track.stop());windowButton.disabled=false;}
 });
-save.addEventListener('click',()=>{
+save.addEventListener('click',async()=>{
   if(!renderedData)return;
-  const a=document.createElement('a');a.href=renderedData;
-  a.download='screenshot-'+new Date().toISOString().replace(/[:.]/g,'-')+'.png';a.click();
+  save.disabled=true;
+  try{
+    const settings=normalizeSettings((await chrome.storage.local.get(SETTINGS_KEY))[SETTINGS_KEY]);
+    await chrome.downloads.download({url:renderedData,filename:safeFilename(new Date(),settings.exportPrefix),saveAs:settings.exportAskWhere,conflictAction:'uniquify'});
+  }catch(error){status(error,true);}
+  finally{save.disabled=false;}
 });
 copy.addEventListener('click',async()=>{
   if(!renderedData)return;
