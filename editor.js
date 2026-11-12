@@ -1,3 +1,4 @@
+import {resolveLanguage,browserLanguages,applyTranslations,translate} from './i18n.mjs';
 import {copyPngToClipboard} from './clipboard.mjs';
 import {createAutomaticClipboard} from './clipboard-flow.mjs';
 import {MIN_ZOOM, MAX_ZOOM, clamp, fitScale, anchoredPan, imagePosition} from './viewport.mjs';
@@ -6,10 +7,17 @@ import {findAnnotation,annotationBounds,translateAnnotation,moveAnnotation,remov
 import {paintAnnotation, renderEdit} from './edit-render.mjs';
 import {TOOLS,strokeWidth,toolForKey,shouldHandleShortcut,normalisedWheelDelta,sameCrop} from './editor-interactions.mjs';
 import {SETTINGS_KEY,normalizeSettings,safeFilename,keysToPrune} from './preferences.mjs';
+import {findCaptureTab, isCaptureMode} from './new-capture.mjs';
 
 const $ = id => document.getElementById(id);
+let language='en';
+const t=text=>translate(language,text);
+async function initLanguage(){try{const prefs=(await chrome.storage.local.get(SETTINGS_KEY))[SETTINGS_KEY];language=resolveLanguage(normalizeSettings(prefs).language,browserLanguages());}catch{language=resolveLanguage('auto',browserLanguages());}applyTranslations(document.body,language);}
+void initLanguage();
 const preview = $('preview'), stage = $('viewport'), notice = $('notice'), overlay = $('overlay');
 const copy = $('copy'), save = $('save'), windowButton = $('window');
+const newCaptureDialog = $('new-capture-dialog'), newCaptureError = $('new-capture-error');
+let captureSourceTabId = null, startingNewCapture = false;
 const zoomIn = $('zoom-in'), zoomOut = $('zoom-out'), fitButton = $('fit'), actualButton = $('actual');
 const zoomValue = $('zoom-value'), undoButton = $('undo'), redoButton = $('redo'), resetButton = $('reset-edit');
 const colorPicker = $('edit-color'), widthPicker = $('edit-width'), toolButtons = [...document.querySelectorAll('[data-tool]')];
@@ -22,7 +30,7 @@ let scale = 1, panX = 0, panY = 0, dragging = null, fitMode = true, tool = 'pan'
 let drawGeneration = 0;
 const dimensions = () => ({iw: preview.naturalWidth, ih: preview.naturalHeight, vw: stage.clientWidth, vh: stage.clientHeight});
 function status(message, error = false) {
-  notice.textContent = message;
+  notice.textContent = t(message);
   notice.classList.toggle('error', error);
   notice.classList.toggle('success', !error && /(?:automatisch kopiert|in zwischenablage kopiert)/i.test(message));
 }
@@ -75,11 +83,11 @@ function setTool(next) {
     button.classList.toggle('active', selected);
     button.setAttribute('aria-pressed', String(selected));
   }
-  $('view-hint').textContent = tool === 'pan' ? 'Mausrad: Zoom · Ziehen: Bewegen · Doppelklick: Anpassen' :
+  $('view-hint').textContent = t(tool === 'pan' ? 'Mausrad: Zoom · Ziehen: Bewegen · Doppelklick: Anpassen' :
     tool === 'crop' ? 'Bereich ziehen: Zuschneiden · Esc: Hand' :
     tool === 'text' ? 'Position anklicken: Text · Esc: Hand' :
     tool === 'select' ? 'Objekt anklicken und verschieben · Entf: Löschen · Doppelklick: Text bearbeiten' :
-    ['blur','pixelate'].includes(tool) ? 'Bereich ziehen: Bildbereich unkenntlich machen' : 'Ziehen: Annotation · Esc: Hand';
+    ['blur','pixelate'].includes(tool) ? 'Bereich ziehen: Bildbereich unkenntlich machen' : 'Ziehen: Annotation · Esc: Hand');
   drawOverlay();
 }
 let clipboardNotice = '';
@@ -121,7 +129,7 @@ function render(onPreviewReady = null) {
     if (fitMode) fit(); else draw();
     if (onPreviewReady) onPreviewReady();
     const crop = activeEdit().crop;
-    status(`Bereit · PNG · ${Math.round(crop.w)} × ${Math.round(crop.h)} · ${activeEdit().annotations.length} Annotationen${clipboardNotice ? ' · '+clipboardNotice : ''}`, clipboardFailed);
+    status(`${t('Bereit')} · PNG · ${Math.round(crop.w)} × ${Math.round(crop.h)} · ${activeEdit().annotations.length} ${t('Annotationen')}${clipboardNotice ? ' · '+t(clipboardNotice) : ''}`, clipboardFailed);
   };
   preview.onerror = () => { if(generation===drawGeneration)status('Bearbeitetes Bild konnte nicht geladen werden.',true); };
   preview.src = renderedData;
@@ -172,10 +180,50 @@ async function load() {
     const stored = (await chrome.storage.local.get(key))[key];
     if (!stored) throw new Error('Screenshot nicht mehr verfügbar.');
     if (stored.error) throw new Error(stored.error);
+    captureSourceTabId = Number.isInteger(stored.sourceTabId) ? stored.sourceTabId : null;
     setImage(stored.data);
   } catch (error) { status(error.message || String(error),true); }
 }
 void load();
+$('new-capture').addEventListener('click', () => {
+  newCaptureError.hidden = true;
+  newCaptureError.textContent = '';
+  newCaptureDialog.showModal();
+});
+$('new-capture-close').addEventListener('click', () => {if (!startingNewCapture) newCaptureDialog.close();});
+newCaptureDialog.addEventListener('click', event => {if(event.target === newCaptureDialog && !startingNewCapture)newCaptureDialog.close();});
+newCaptureDialog.addEventListener('cancel', event => {if(startingNewCapture)event.preventDefault();});
+for (const button of document.querySelectorAll('[data-new-mode]')) button.addEventListener('click',async () => {
+  if (startingNewCapture || !isCaptureMode(button.dataset.newMode)) return;
+  startingNewCapture = true;
+  newCaptureError.hidden = true;
+  const buttons = [...newCaptureDialog.querySelectorAll('button')];
+  buttons.forEach(item => {item.disabled = true;});
+  try {
+    const mode = button.dataset.newMode;
+    const stored = await chrome.storage.local.get(SETTINGS_KEY);
+    const timer = normalizeSettings(stored[SETTINGS_KEY]).timer;
+    if (mode === 'window') {
+      const response = await chrome.runtime.sendMessage({type:'OPEN_WINDOW_PREVIEW',timer});
+      if (!response?.ok) throw new Error(response?.error || 'Die Aufnahme konnte nicht gestartet werden.');
+    } else {
+      const allTabs = await chrome.tabs.query({});
+      const source = findCaptureTab(allTabs, captureSourceTabId);
+      if (!source) throw new Error('Keine aufnehmbare Webseite gefunden. Öffne eine HTTP(S)-Webseite und versuche es erneut.');
+      await chrome.tabs.update(source.id,{active:true});
+      await chrome.windows.update(source.windowId,{focused:true});
+      const response = await chrome.runtime.sendMessage({type:'START',mode,tabId:source.id,timer});
+      if (!response?.ok) throw new Error(response?.error || 'Die Aufnahme konnte nicht gestartet werden.');
+    }
+    newCaptureDialog.close();
+  } catch(error) {
+    newCaptureError.textContent = t(error.message || 'Die Aufnahme konnte nicht gestartet werden.');
+    newCaptureError.hidden = false;
+  } finally {
+    startingNewCapture = false;
+    buttons.forEach(item => {item.disabled = false;});
+  }
+});
 zoomIn.addEventListener('click', () => setScale(scale * 1.25));
 zoomOut.addEventListener('click', () => setScale(scale / 1.25));
 fitButton.addEventListener('click', fit);
@@ -269,7 +317,7 @@ stage.addEventListener('pointerdown', event => {
     // Prompt is user initiated, not run during extension startup.
     const point=imagePoint(event);
     if(point.x<0||point.y<0||point.x>preview.naturalWidth||point.y>preview.naturalHeight)return;
-    const text=window.prompt('Text für Screenshot (max. 200 Zeichen):','');
+    const text=window.prompt(t('Text für Screenshot (max. 200 Zeichen):'),'');
     if(text?.trim()) {
       const source=localToSource(activeEdit(),clampPoint(point));
       commitEdit(addAnnotation(activeEdit(),{type:'text',x:source.x,y:source.y,text:text.slice(0,200),color:colorPicker.value,fontSize:Math.max(16,Math.min(72,24/Math.max(.5,scale)))}));
@@ -358,7 +406,7 @@ window.addEventListener('keydown',event=>{
   else if(event.key==='1'){event.preventDefault();actual();}
 });
 function deleteSelected(){if(!history||selectedIndex<0)return;const next=removeAnnotation(activeEdit(),selectedIndex);if(next){commitEdit(next);setTool('select');}}
-function editSelectedText(){const a=activeEdit()?.annotations[selectedIndex];if(a?.type!=='text')return;const text=window.prompt('Text bearbeiten (max. 200 Zeichen):',a.text);if(text?.trim()){const next=patchAnnotation(activeEdit(),selectedIndex,{text:text.slice(0,200)});if(next){const index=selectedIndex;commitEdit(next);setTool('select');selectedIndex=index;updateControls();drawOverlay();}}}
+function editSelectedText(){const a=activeEdit()?.annotations[selectedIndex];if(a?.type!=='text')return;const text=window.prompt(t('Text bearbeiten (max. 200 Zeichen):'),a.text);if(text?.trim()){const next=patchAnnotation(activeEdit(),selectedIndex,{text:text.slice(0,200)});if(next){const index=selectedIndex;commitEdit(next);setTool('select');selectedIndex=index;updateControls();drawOverlay();}}}
 deleteButton.addEventListener('click',deleteSelected);
 editObjectButton.addEventListener('click',editSelectedText);
 colorPicker.addEventListener('change',()=>{if(tool!=='select'||selectedIndex<0)return;const index=selectedIndex,next=patchAnnotation(activeEdit(),index,{color:colorPicker.value});if(next){commitEdit(next);setTool('select');selectedIndex=index;updateControls();drawOverlay();}});

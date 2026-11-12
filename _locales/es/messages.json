@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "SCREENSHOT"
+  },
+  "appDescription": {
+    "message": "Captura áreas, elementos, pestañas, ventanas y páginas completas. Edita, copia y guarda PNG localmente."
+  },
+  "actionTitle": {
+    "message": "SCREENSHOT - Captura tu pantalla"
+  },
+  "visibleCommand": {
+    "message": "Capturar la pestaña visible"
+  },
+  "fullCommand": {
+    "message": "Capturar la página completa"
+  }
+}

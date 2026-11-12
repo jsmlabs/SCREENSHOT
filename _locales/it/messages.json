@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "SCREENSHOT"
+  },
+  "appDescription": {
+    "message": "Acquisisci aree, elementi, schede, finestre e pagine intere. Modifica, copia e salva PNG in locale."
+  },
+  "actionTitle": {
+    "message": "SCREENSHOT - Acquisisci lo schermo"
+  },
+  "visibleCommand": {
+    "message": "Acquisisci la scheda visibile"
+  },
+  "fullCommand": {
+    "message": "Acquisisci la pagina intera"
+  }
+}

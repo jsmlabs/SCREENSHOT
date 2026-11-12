@@ -171,7 +171,7 @@ async function capture(job, selection, timer = 0) {
     if (typeof response.data !== 'string' || !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(response.data))
       throw new Error('Bildverarbeitung lieferte ungültige PNG-Daten.');
     throwIfCancelled(signal);
-    result = {data: response.data, mode};
+    result = {data: response.data, mode, sourceTabId: tabId};
   } catch (cause) { error = cause; }
   finally {
     // Restore source-page state BEFORE preview focus is requested.

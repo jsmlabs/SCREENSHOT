@@ -7,9 +7,11 @@ const worker={id:'extension-id',url:runtime.getURL('background.js')};
 const job={tabId:8};
 const png='data:image/png;base64,AA==';
 const base={type:'COMPOSE',mode:'visible',width:20,height:10,viewport:{width:20,height:10},shots:[{x:0,y:0,data:png}]};
-test('Only extension popup is authorized for privileged worker commands',()=>{
+test('Only extension popup and editor are authorized for privileged worker commands',()=>{
   assert.equal(isTrustedUiSender(popup,runtime),true);
-  for(const sender of [{},{...popup,id:'foreign'},{...popup,url:'https://evil.invalid/'},worker,{...popup,url:runtime.getURL('editor.html')}])
+  assert.equal(isTrustedUiSender({...popup,url:runtime.getURL('editor.html?id=test')},runtime),true);
+  assert.equal(isTrustedUiSender({...popup,url:runtime.getURL('editor.html')},runtime),true);
+  for(const sender of [{},{...popup,id:'foreign'},{...popup,url:'https://evil.invalid/'},worker,{...popup,url:runtime.getURL('editor.html/evil')},{...popup,url:runtime.getURL('editor.html.evil')}])
     assert.equal(isTrustedUiSender(sender,runtime),false);
 });
 test('Offscreen processing accepts only worker messages',()=>{

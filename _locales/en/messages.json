@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "SCREENSHOT"
+  },
+  "appDescription": {
+    "message": "Capture areas, elements, tabs, windows and full pages. Edit locally, copy or save PNG images."
+  },
+  "actionTitle": {
+    "message": "SCREENSHOT - Capture your screen"
+  },
+  "visibleCommand": {
+    "message": "Capture the visible tab"
+  },
+  "fullCommand": {
+    "message": "Capture the full page"
+  }
+}

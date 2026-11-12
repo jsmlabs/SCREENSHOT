@@ -246,3 +246,16 @@ html,body{max-width:100%}
 .popup footer span{white-space:nowrap}
 .popup .inline-action:focus-visible,.popup .history-open:focus-visible,.popup .history-delete:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 @media(prefers-reduced-motion:reduce){.popup .capture-options button{transition:none}}
+
+/* New capture: native accessible modal, scoped to the editor. */
+.new-capture-dialog{width:min(370px,calc(100vw - 32px));max-height:min(590px,calc(100vh - 30px));overflow-y:auto;margin:auto;padding:18px;border:1px solid var(--border);border-radius:14px;background:var(--surface);color:var(--text);box-shadow:0 20px 65px #0007}
+.new-capture-dialog::backdrop{background:#0009}
+.new-capture-heading{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:14px}
+.new-capture-heading strong{font-size:15px}.new-capture-heading p{margin:5px 0 0;color:var(--muted);font-size:12px}
+.editor .new-capture-heading button{font-size:20px;line-height:1;min-width:32px}
+.new-capture-modes{display:grid;gap:7px}
+.editor .new-capture-modes button{display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:4px;padding:11px 13px;min-height:58px;background:var(--bg)}
+.new-capture-modes button strong{font-size:13px}.new-capture-modes button small{font-size:11px;color:var(--muted)}
+.new-capture-error{margin:12px 0 0;font-size:12px;color:var(--danger);line-height:1.5}
+.new-capture-error[hidden]{display:none}
+.editor .toolbar-actions #new-capture{font-weight:650}
