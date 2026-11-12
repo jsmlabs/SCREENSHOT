@@ -31,8 +31,8 @@ test('Per-capture storage prevents stale preview and concurrent window races',()
 });
 test('Popup is focused after creation; no new tabs',()=>{
   assert.match(read('background.js'),/chrome\.windows\.create\(/);
-  assert.match(read('background.js'),/focused: true/);
-  assert.match(read('background.js'),/chrome\.windows\.update\(preview\.id, \{focused: true\}\)/);
+  assert.match(read('background.js'),/focused:\s*true/);
+  assert.match(read('background.js'),/chrome\.windows\.update\(preview\.id, \{focused:\s*true\}\)/);
   assert.doesNotMatch(read('background.js'),/chrome\.tabs\.create\(/);
 });
 test('Full-page scroll restored before publishing image',()=>{

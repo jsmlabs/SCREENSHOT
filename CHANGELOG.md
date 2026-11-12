@@ -1,8 +1,17 @@
+## 2026-11-12 - Reliability and responsiveness improvements (local working candidate)
+
+- Editor reuse now tolerates a tab disappearing between enumeration and navigation.
+- Redundant editor cleanup occurs only after a usable editor is chosen; cleanup failures are nonfatal.
+- Popup settings no longer reload the full PNG history for timer, export, autosave or language changes. Language changes repaint cached history directly.
+- Added regression coverage for stale editor tabs, cleanup failure, and preference-refresh scope.
+- Preserved the single-editor-window policy, Manifest V3 permissions, version 1.18.0 and prior popup sizing fixes.
+
 # Changelog
 
 ## 1.18.0 - Reliability and history responsiveness
 
 ### Improved
+- Reuses the existing SCREENSHOT editor window for new captures, history items, and window previews; serializes concurrent open requests and removes duplicate editor tabs.
 - Library search and favorites filtering render from a local popup snapshot without repeatedly reading full PNG payloads from Chrome storage per keystroke.
 - Concurrent asynchronous library refreshes discard stale results before changing the visible list.
 - Accent-insensitive local history search, validated screenshot names before whitespace normalization, and a one-operation-at-a-time guard for history actions.

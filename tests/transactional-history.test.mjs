@@ -16,7 +16,7 @@ function harness({failSet=false,failPreview=false}={}) {
   const chrome={
     runtime:{id:'test',getURL:p=>'chrome-extension://test/'+p,onMessage:{addListener:()=>{}}},
     tabs:{onRemoved:{addListener:()=>{}}},
-    windows:{create:async()=>{previews++;if(failPreview)throw Error('preview rejected');return{id:1};},update:async()=>{}},
+    windows:{getAll:async()=>[],create:async()=>{previews++;if(failPreview)throw Error('preview rejected');return{id:1};},update:async()=>{}},
     storage:{local:{get:async()=>({...store}),set:async obj=>{if(failSet)throw Error('storage full');Object.assign(store,obj);},remove:async keys=>{for(const key of [keys].flat())delete store[key];}}}
   };
   const sandbox={chrome,crypto:{randomUUID:()=> 'b'.repeat(36)},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune};

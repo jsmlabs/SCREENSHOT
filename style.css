@@ -274,7 +274,7 @@ button,select,input{touch-action:manipulation}
 button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,.image-viewport:focus-visible{
   outline:2px solid var(--focus);outline-offset:2px;box-shadow:0 0 0 4px var(--ui-ring)
 }
-.popup{width:384px;max-height:min(650px,100dvh);background:var(--bg)}
+.popup{width:384px;height:600px;max-height:600px;background:var(--bg)}
 .popup-header{height:74px;padding:14px 20px;background:var(--bg)}
 .mark,.editor-mark{height:37px;width:37px;border-radius:12px;box-shadow:0 2px 8px #0002}
 .mark .ui-icon,.editor-mark .ui-icon{width:19px;height:19px}
@@ -351,7 +351,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
   .editor .stage{margin:8px;border-radius:10px}
 }
 @media(max-width:440px){
-  .popup{width:100vw;max-width:100vw}
   .popup-content{padding:14px 12px 10px}
   .popup-header{padding:12px 14px}
   .popup .capture-options button{min-height:58px}
@@ -378,3 +377,8 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .popup .history-actions button:hover{color:var(--text);background:var(--surface-hover,var(--surface))}
 .popup .history-actions button:focus-visible,.popup .library-controls input:focus-visible,.popup #export-prefix:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
 @media(max-width:360px){.popup .history-actions button{min-width:24px}.popup .history-open{padding:8px}}
+
+/* Chrome action popups size from their document intrinsic width. Never use viewport-relative
+   sizing here: it can lock the popup into Chrome's initial narrow viewport. */
+html.popup-root{width:384px;min-width:384px;max-width:none}
+html.popup-root body.popup{width:384px;min-width:384px;max-width:none}

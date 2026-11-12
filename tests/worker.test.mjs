@@ -15,7 +15,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 test('Visible capture stores unique image and focuses popup on each request', async()=>{
   const listeners = new Map(), store = {}, events = [];
-  let nextId=0;
+  let nextId=0, preview=null;
   const chrome = {
     runtime: {id:'test',
       onMessage:{addListener:f=>listeners.set('message',f)},
@@ -25,7 +25,9 @@ test('Visible capture stores unique image and focuses popup on each request', as
     tabs: {
       onRemoved:{addListener:f=>listeners.set('removed',f)},
       get:async()=>({id:1,url:'https://example.org',active:true,windowId:7}),
-      captureVisibleTab:async()=>('data:image/png;base64,aGVsbG8=')
+      captureVisibleTab:async()=>('data:image/png;base64,aGVsbG8='),
+      update:async(id,options)=>{events.push('reuse');assert.equal(id,preview.tabs[0].id);preview.tabs[0].url=options.url;},
+      remove:async()=>{throw new Error('No duplicates expected');}
     },
     scripting:{executeScript:async()=>[{result:{width:500,height:300,x:0,y:0}}]},
     offscreen:{hasDocument:async()=>true},
@@ -35,7 +37,8 @@ test('Visible capture stores unique image and focuses popup on each request', as
       remove:async key=>{for(const k of [key].flat())delete store[k];}
     }},
     windows:{
-      create:async options=>{events.push('create');assert.equal(options.focused,true);assert.equal(options.type,'popup');return {id:++nextId};},
+      getAll:async()=>preview?[preview]:[],
+      create:async options=>{events.push('create');assert.equal(options.focused,true);assert.equal(options.type,'popup');preview={id:++nextId,tabs:[{id:42,url:options.url}]};return preview;},
       update:async(id, options)=>{events.push('focus');assert.equal(options.focused,true);}
     }
   };
@@ -48,7 +51,7 @@ test('Visible capture stores unique image and focuses popup on each request', as
     for(let i=0;i<30&&events.filter(e=>e==='focus').length<=n;i++)await pause(25);
     assert.equal(events.filter(e=>e==='focus').length,n+1);
   }
-  assert.deepEqual(events,['stored','create','focus','stored','create','focus']);
+  assert.deepEqual(events,['stored','create','focus','stored','reuse','focus']);
   assert.equal(Object.keys(store).filter(k=>k.startsWith('capture:')).length,2);
   for (const [key, value] of Object.entries(store)) if (key.startsWith('capture:')) {
     assert.equal(value.mode, 'visible');

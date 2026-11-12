@@ -30,7 +30,7 @@ function boot({capturePng, storePng}={}){
     scripting:{executeScript:async()=>[{result:{width:100,height:100,x:0,y:0}}]},
     offscreen:{hasDocument:async()=>true},
     storage:{local:{get:async()=>({}),set:async item=>{if(storePng)await storePng();records.push(...Object.values(item));},remove:async()=>{}}},
-    windows:{create:async()=>{previews++;return{id:13};},update:async()=>{}}
+    windows:{getAll:async()=>[],create:async()=>{previews++;return{id:13};},update:async()=>{}}
   };
   const sandbox={chrome,crypto:{randomUUID:()=> 'b'.repeat(36)},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune};
   const source=readFileSync(new URL('../background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,'');
@@ -71,7 +71,7 @@ test('failed capture keeps prior history rather than pruning it at the retention
     scripting:{executeScript:async()=>[{result:{width:100,height:100,x:0,y:0}}]},
     offscreen:{hasDocument:async()=>true},
     storage:{local:{get:async()=>({...existing}),set:async item=>Object.assign(existing,item),remove:async keys=>{for(const key of [keys].flat())delete existing[key];}}},
-    windows:{create:async()=>({id:14}),update:async()=>{}}
+    windows:{getAll:async()=>[],create:async()=>({id:14}),update:async()=>{}}
   };
   const sandbox={chrome,crypto:{randomUUID:()=> 'b'.repeat(36)},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune};
   vm.runInNewContext(readFileSync(new URL('../background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,''),sandbox);

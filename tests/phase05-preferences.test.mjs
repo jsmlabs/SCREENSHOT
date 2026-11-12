@@ -51,3 +51,9 @@ test('editor auto-save is opt-in and requests downloads only after full preview 
  assert.match(js,/render\(\(\) => \{scheduleAutomaticCopy\(value\);if\(new URLSearchParams\(location.search\).get\('fresh'\)==='1'\)void autoSaveOriginal\(value\);\}\)/);
  assert.match(js,/autoSaved=true/);
 });
+
+test('unrelated preference changes do not trigger costly image-history reload',()=>{
+ const js=read('popup.js');
+ assert.match(js,/if \('historyLimit' in patch \|\| 'historyDays' in patch\) await refreshHistory\(true\)/);
+ assert.match(js,/else if \('language' in patch\) renderHistory\(\)/);
+});

@@ -51,7 +51,10 @@ async function updatePreferences(patch){
   try{
     await chrome.storage.local.set({[SETTINGS_KEY]:preferences});
     setInterfaceLanguage();
-    await refreshHistory(true);
+    // Only history retention changes need a full PNG-library read and prune.
+    // Language changes can repaint the already-cached list instantly.
+    if ('historyLimit' in patch || 'historyDays' in patch) await refreshHistory(true);
+    else if ('language' in patch) renderHistory();
     if(status.classList.contains('error')){status.className='';status.textContent='';lastError=null;}
   }catch(error){preferences=previous;syncPreferenceFields();setInterfaceLanguage();displayError(error);}
 }

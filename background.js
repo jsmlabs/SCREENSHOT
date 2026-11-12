@@ -13,17 +13,51 @@ function clearSelectionExpiry() { if (selectionExpiry !== null) clearTimeout(sel
 function expireSelection(job) { clearSelectionExpiry(); selectionExpiry = setTimeout(() => { if (lifecycle.active === job && lifecycle.state === 'selecting') { selectionTimer = 0; lifecycle.abort('Auswahl-Zeitlimit erreicht.'); chrome.scripting.executeScript({target:{tabId:job.tabId},func:()=>window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))}).catch(()=>{}); } }, 120_000); }
 
 
+// Serialize preview requests so concurrent captures/history actions cannot create duplicate windows.
+let previewQueue = Promise.resolve();
 async function openPreview(query = '') {
-  const preview = await chrome.windows.create({
-    url: chrome.runtime.getURL('editor.html' + query),
-    type: 'popup', width: 520, height: 590, focused: true
+  const request = previewQueue.catch(() => {}).then(async () => {
+    const editorUrl = chrome.runtime.getURL('editor.html');
+    const targetUrl = editorUrl + query;
+    const windows = await chrome.windows.getAll({populate:true,windowTypes:['normal','popup']});
+    const existing = windows.flatMap(window => (window.tabs || [])
+      .filter(tab => tab.url?.split(/[?#]/, 1)[0] === editorUrl && Number.isInteger(tab.id))
+      .map(tab => ({tab, window})));
+    if (existing.length) {
+      // An editor tab can be closed between discovery and reuse. Try the next
+      // candidate instead of failing the capture or opening a duplicate.
+      for (const primary of existing) {
+        try {
+          await chrome.tabs.update(primary.tab.id, {url:targetUrl,active:true});
+        } catch (error) {
+          // A stale tab is not a reason to discard the remaining candidates.
+          console.warn('SCREENSHOT editor tab unavailable:', error);
+          continue;
+        }
+        // Only close redundant editor tabs after the chosen tab is usable.
+        // Failure to close a tab must not turn a successful capture into an error.
+        for (const duplicate of existing) {
+          if (duplicate.tab.id === primary.tab.id) continue;
+          try { await chrome.tabs.remove(duplicate.tab.id); }
+          catch (error) { console.warn('SCREENSHOT duplicate editor cleanup:', error); }
+        }
+        try { await chrome.windows.update(primary.window.id, {focused:true}); }
+        catch (error) { console.warn('SCREENSHOT focus request:', error); }
+        return primary.window;
+      }
+    }
+    const preview = await chrome.windows.create({
+      url:targetUrl, type:'popup', width:520, height:590, focused:true
+    });
+    // Focus requests are best-effort: Windows/Chromium may reject foreground activation.
+    if (Number.isInteger(preview?.id)) {
+      try { await chrome.windows.update(preview.id, {focused:true}); }
+      catch (error) { console.warn('SCREENSHOT focus request:', error); }
+    }
+    return preview;
   });
-  // Focus requests are best-effort: Windows/Chromium may reject foreground activation.
-  if (Number.isInteger(preview?.id)) {
-    try { await chrome.windows.update(preview.id, {focused: true}); }
-    catch (error) { console.warn('SCREENSHOT focus request:', error); }
-  }
-  return preview;
+  previewQueue = request;
+  return request;
 }
 
 async function run(tabId, func, args = [], signal = null) {
