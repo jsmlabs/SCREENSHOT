@@ -55,7 +55,32 @@ for %%R in ("%CD%") do set "HERE=%%~fR"
 if /i not "%ROOT%"=="%HERE%" (call :fail "Place this script in the repository root." & goto :end_failure)
 
 for /f "delims=" %%R in ('git remote get-url origin 2^>nul') do set "REMOTE=%%R"
-if not defined REMOTE (call :fail "The origin remote is missing." & goto :end_failure)
+if not defined REMOTE (
+  call :rule
+  echo %BOLD%%YELLOW%  REPAIR  /  MISSING ORIGIN REMOTE%RESET%
+  echo %MUTED%  Local Git metadata exists, but no origin remote is configured.%RESET%
+  echo %MUTED%  The current working files will not be overwritten.%RESET%
+  echo.
+  choice /c YN /n /m "  Add origin for jsmlabs/SCREENSHOT? [Y/N] "
+  if errorlevel 2 goto :cancel
+  git remote add origin https://github.com/jsmlabs/SCREENSHOT.git
+  if errorlevel 1 (call :fail "Could not add origin remote." & goto :end_failure)
+  for /f "delims=" %%R in ('git remote get-url origin 2^>nul') do set "REMOTE=%%R"
+  if not defined REMOTE (call :fail "Origin still unavailable after setup." & goto :end_failure)
+  git rev-parse --verify HEAD >nul 2>&1
+  if errorlevel 1 (
+    echo %CYAN%  No local commits found. Retrieving GitHub history...%RESET%
+    git fetch origin main
+    if errorlevel 1 (call :fail "Fetch failed. Check internet access and authentication." & goto :end_failure)
+    git reset --mixed origin/main
+    if errorlevel 1 (call :fail "Could not establish the local baseline." & goto :end_failure)
+    git branch -M main
+    if errorlevel 1 (call :fail "Could not select the main branch." & goto :end_failure)
+    echo %GREEN%  [OK] Local Git history repaired. Working files preserved.%RESET%
+  )
+  echo %GREEN%  [OK] Origin remote is now configured.%RESET%
+  echo.
+)
 set "REMOTE_OK="
 if /i "%REMOTE%"=="https://github.com/jsmlabs/SCREENSHOT" set "REMOTE_OK=1"
 if /i "%REMOTE%"=="https://github.com/jsmlabs/SCREENSHOT.git" set "REMOTE_OK=1"
