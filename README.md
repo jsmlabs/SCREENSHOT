@@ -11,14 +11,14 @@ A lightweight Chromium screenshot extension with five capture modes, a built-in 
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
 [![Release status](https://img.shields.io/badge/status-browser_validation_pending-f59e0b?style=flat-square)](TESTING.md)
 
-**[Get started](#get-started)** · **[Features](#features)** · **[Editor](#image-editor)** · **[Development](#development)** · **[Troubleshooting](#troubleshooting)**
+**[Install](#get-started)** · **[Capture](#capture-modes)** · **[Editor](#image-editor)** · **[Architecture](#architecture)** · **[Development](#development)** · **[Troubleshooting](#troubleshooting)**
 
 </div>
 
 ---
 
 > [!IMPORTANT]
-> **Current build: 1.10.0.** SCREENSHOT can be loaded locally as an unpacked extension, but **real Chrome/Edge end-to-end acceptance and Chrome Web Store publication have not been verified**. Automated test results and outstanding browser checks are documented in [TESTING.md](TESTING.md) and [the release report](PHASE-06-RELEASE-REPORT.md).
+> **Version distinction:** The public `main` branch currently contains **v1.10.0** (`manifest.json`). A separate **v1.12.0** project snapshot has been prepared with localization and a new capture workflow, but those files **have not yet been pushed to GitHub**. The version badge above deliberately reflects the installable source on `main`, not the pending update. Real Chrome/Edge end-to-end acceptance and Chrome Web Store publication are still unverified. See [TESTING.md](TESTING.md) and the [release report](PHASE-06-RELEASE-REPORT.md).
 
 ## Overview
 
@@ -26,7 +26,7 @@ SCREENSHOT provides a focused screenshot workflow inside Chromium-based browsers
 
 **Choose a target → Capture → Preview and edit → Copy or save PNG**
 
-The extension uses a German-language interface, respects light/dark appearance, and processes screenshots locally rather than uploading them to an application cloud service. The codebase is built with native browser APIs and JavaScript modules, without a runtime package manager or external UI framework.
+The currently published source uses a German-language interface, respects light/dark appearance, and processes screenshots locally rather than uploading them to an application cloud service. The codebase is built with native browser APIs and JavaScript modules, without a runtime package manager or external UI framework.
 
 ### At a glance
 
@@ -40,6 +40,18 @@ The extension uses a German-language interface, respects light/dark appearance, 
 | | **Image editor** | Crop, annotate, blur, pixelate, zoom, undo, and redo |
 | | **PNG workflow** | Attempt automatic original-image clipboard copy; manually copy or download edited PNGs |
 | | **Local productivity** | Capture timer, opt-in auto-save, local history, and configurable shortcuts |
+
+### Upcoming project version: 1.12.0 (not yet on `main`)
+
+The separately prepared v1.12.0 snapshot extends the current feature set:
+
+| Version | Addition | Availability |
+| :-- | :-- | :-- |
+| **1.10.0** | German-language consumer interface and core screenshot/editor workflow | On GitHub `main` |
+| **1.11.0** | Multi-language localization and language detection | Prepared locally, not pushed |
+| **1.12.0** | Start a new screenshot capture from the existing editor | Prepared locally, not pushed |
+
+**Do not assume that downloading this repository currently installs 1.12.0.** After the newer project files have been synchronized and verified on GitHub, update the version badge, installation details, and release status against the actual contents of `manifest.json`.
 
 ## Get started
 
@@ -237,7 +249,9 @@ The optional `COMMIT-PUSH.bat` provides a colorized command-line interface for r
 2. Run `COMMIT-PUSH.bat` from the repository root.
 3. Review the changed-file summary, enter a commit message, and confirm before publishing.
 
-The helper includes Git metadata/remote setup and recovery paths for extracted ZIP directories. **Inspect every staged change**, especially deletions when connecting a ZIP folder to an existing remote history. Do not use the script as a substitute for reviewing `git diff` or remote changes.
+The helper can recover missing Git metadata and remotes, fetch recent GitHub history, and synchronize its local baseline without overwriting working files. It also blocks publication when the essential `.gitignore` or `LICENSE` files are missing. **Inspect every staged change**, especially deletions when connecting a ZIP folder to an existing remote history. An update to the script on GitHub does not automatically replace an older local copy.
+
+If `git push` reports `fetch first`, do not force-push: update the local script, fetch the branch, inspect divergence and changes, and retry only after reconciling the history. A Git commit of the README alone does **not** publish the pending v1.12.0 code. Do not use this helper as a substitute for checking `git diff --cached`.
 
 For a standard command-line workflow:
 
@@ -299,11 +313,11 @@ Download the **latest** `COMMIT-PUSH.bat` into the project root. Confirm Git is 
 
 ## Release status and documentation
 
-The source tree identifies itself as **v1.10.0** in `manifest.json` and the popup. The current development documentation explicitly marks the real-browser release gate as **pending**; do not interpret the version badge as a published or fully end-to-end-tested Chrome Web Store release.
+The **GitHub `main` source tree** currently identifies itself as **v1.10.0** in `manifest.json` and the popup. The separately prepared **v1.12.0** snapshot is **not** yet merged into this branch. The current development documentation explicitly marks the real-browser release gate as **pending**; do not interpret the version badge as a published or fully end-to-end-tested Chrome Web Store release.
 
 | Document | Content |
 | :-- | :-- |
-| [Consumer release 1.10.0](CONSUMER-RELEASE-1.10.0.md) | Current UI polish scope and release prerequisites |
+| [Consumer release 1.10.0](CONSUMER-RELEASE-1.10.0.md) | Published source's UI polish scope and release prerequisites |
 | [Testing](TESTING.md) | Automated evidence, historical checklists, and open acceptance items |
 | [Phase 06 release report](PHASE-06-RELEASE-REPORT.md) | Security/performance review and release HOLD decision |
 | [Release candidate notes](RELEASE-CANDIDATE.md) | Earlier release-candidate technical context |
