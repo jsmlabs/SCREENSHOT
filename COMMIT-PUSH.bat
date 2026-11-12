@@ -49,6 +49,7 @@ if errorlevel 1 (
   echo %GREEN%  [OK] Repository connected. Existing files preserved.%RESET%
   echo.
 )
+
 for /f "delims=" %%R in ('git rev-parse --show-toplevel 2^>nul') do set "ROOT=%%R"
 for %%R in ("%ROOT%") do set "ROOT=%%~fR"
 for %%R in ("%CD%") do set "HERE=%%~fR"
@@ -64,7 +65,7 @@ if not defined REMOTE (
   choice /c YN /n /m "  Add origin for jsmlabs/SCREENSHOT? [Y/N] "
   if errorlevel 2 goto :cancel
   git remote add origin https://github.com/jsmlabs/SCREENSHOT.git
-  if errorlevel 1 (call :fail "Could not add origin remote." & goto :end_failure)
+  if errorlevel 1 (call :fail "Could not add origin for jsmlabs/SCREENSHOT." & goto :end_failure)
   for /f "delims=" %%R in ('git remote get-url origin 2^>nul') do set "REMOTE=%%R"
   if not defined REMOTE (call :fail "Origin still unavailable after setup." & goto :end_failure)
   git rev-parse --verify HEAD >nul 2>&1
@@ -81,6 +82,7 @@ if not defined REMOTE (
   echo %GREEN%  [OK] Origin remote is now configured.%RESET%
   echo.
 )
+
 set "REMOTE_OK="
 if /i "%REMOTE%"=="https://github.com/jsmlabs/SCREENSHOT" set "REMOTE_OK=1"
 if /i "%REMOTE%"=="https://github.com/jsmlabs/SCREENSHOT.git" set "REMOTE_OK=1"
@@ -116,11 +118,13 @@ if errorlevel 1 (
 ) else (
   echo %GREEN%  [OK] Local Git history includes origin.%RESET%
 )
+
 echo.
 echo %MUTED%  REPOSITORY%RESET%  %WHITE%jsmlabs/SCREENSHOT%RESET%
 echo %MUTED%  BRANCH    %RESET%  %CYAN%%BRANCH%%RESET%
 echo %MUTED%  LOCATION  %RESET%  %HERE%
 echo %MUTED%  REMOTE    %RESET%  %REMOTE%
+
 call :rule
 echo %BOLD%%BLUE%  01  WORKING TREE%RESET%
 echo %MUTED%  Changes include untracked files. Review carefully before continuing.%RESET%
@@ -128,15 +132,16 @@ echo.
 git status --short
 if errorlevel 1 (call :fail "Could not read working tree status." & goto :end_failure)
 echo.
-git status --porcelain --untracked-files=normal >nul 2>&1
+git status --porcelain -u >nul 2>&1
 if errorlevel 1 (call :fail "Could not inspect working tree." & goto :end_failure)
 set "HAS_CHANGES="
-for /f "delims=" %%S in ('git status --porcelain --untracked-files=normal') do set "HAS_CHANGES=1"
+for /f "delims=" %%S in ('git status --porcelain -u') do set "HAS_CHANGES=1"
 if not defined HAS_CHANGES (
   echo %GREEN%  [OK] No local changes to commit.%RESET%
   echo %MUTED%  You can still publish existing local commits.%RESET%
   goto :push_prompt
 )
+
 rem Protect repository-critical files from accidental ZIP-sync deletion.
 if not exist ".gitignore" (
   echo %RED%  [BLOCKED] .gitignore is missing. Run: git restore -- .gitignore%RESET%
@@ -146,6 +151,7 @@ if not exist "LICENSE" (
   echo %RED%  [BLOCKED] LICENSE is missing. Run: git restore -- LICENSE%RESET%
   goto :end_failure
 )
+
 echo %YELLOW%  [!] Staging all changes with git add -A, including deletions.%RESET%
 choice /c YN /n /m "  Stage and commit these changes? [Y/N] "
 if errorlevel 2 goto :cancel
@@ -182,6 +188,13 @@ echo %BOLD%%BLUE%  03  REMOTE PUBLISH%RESET%
 git status -sb
 if errorlevel 1 (call :fail "Could not inspect branch status." & goto :end_failure)
 echo.
+git merge-base --is-ancestor HEAD "origin/%BRANCH%"
+if errorlevel 2 (call :fail "Could not compare local and remote history." & goto :end_failure)
+if not errorlevel 1 (
+  echo %GREEN%  [OK] No local commits to push.%RESET%
+  goto :end_success
+)
+
 echo %YELLOW%  [!] Push will publish local commits to origin/%BRANCH%.%RESET%
 choice /c YN /n /m "  Push now? [Y/N] "
 if errorlevel 2 goto :cancel
@@ -195,6 +208,7 @@ if errorlevel 1 (
   call :fail "GitHub moved ahead. Push aborted to protect remote commits."
   goto :end_failure
 )
+
 echo %CYAN%  Connecting to GitHub...%RESET%
 git push -u origin HEAD
 if errorlevel 1 (
@@ -202,6 +216,7 @@ if errorlevel 1 (
   echo %MUTED%  Check authentication, permissions, and remote updates; never force-push blindly.%RESET%
   goto :end_failure
 )
+
 call :rule
 echo %BOLD%%GREEN%  [SUCCESS] PUBLISHED TO GITHUB%RESET%
 echo %MUTED%  Repository: %RESET%https://github.com/jsmlabs/SCREENSHOT
