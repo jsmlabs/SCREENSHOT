@@ -7,7 +7,7 @@ test('Phase 03 retains five capture modes and accessible state feedback',()=>{
   for(const mode of ['area','element','visible','window','full']) assert.match(popup,new RegExp(`data-mode="${mode}"`));
   for(const id of ['capture-timer','status','cancel-capture','interface-language','capture-history'])assert.match(popup,new RegExp(`id="${id}"`));
   assert.match(popup,/role="status" aria-live="polite"/);
-  assert.match(popup,/v1\.18\.0/);
+  assert.ok(popup.includes(`v${JSON.parse(read('manifest.json')).version}`));
 });
 test('Phase 03 preserves editor controls and actual modal semantics',()=>{
   const html=read('src/editor/editor.html');

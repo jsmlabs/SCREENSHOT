@@ -10,7 +10,7 @@ import {dirname,resolve} from 'node:path';
 import vm from 'node:vm';
 import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../src/capture/capture-plan.mjs';
 import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../src/capture/capture-lifecycle.mjs';
-const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../src/background/background.js'),'utf8').replace(/^import .*?;\n/gm,'');
+const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../src/background/background.js'),'utf8').replace(/^import .*?;\r?\n/gm,'');
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 test('worker rejects concurrent delayed capture, allows cancel/retry without stale preview',async()=>{
   let listener, tabRemoved, captures=0, previews=0;

@@ -4,7 +4,7 @@
 
 ### Capture precisely. Edit locally. Export instantly.
 
-[![Version](https://img.shields.io/badge/version-1.18.0-3b82f6?style=flat-square)](manifest.json)
+[![Version](https://img.shields.io/badge/version-1.18.3-3b82f6?style=flat-square)](manifest.json)
 [![Manifest](https://img.shields.io/badge/Chromium-Manifest%20V3-64748b?style=flat-square)](manifest.json)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
 [![Browser acceptance](https://img.shields.io/badge/browser%20acceptance-pending-f59e0b?style=flat-square)](TESTING.md)
@@ -14,7 +14,7 @@
 </div>
 
 > [!IMPORTANT]
-> **Current source candidate: v1.18.0.** Automated Node and static checks passed for this source, but real Chrome/Edge extension and operating-system clipboard acceptance, browser-store review and publication are **not verified**. See [TESTING.md](TESTING.md).
+> **Current source candidate: v1.18.3.** Automated Node and static checks passed for this source, but real Chrome/Edge extension and operating-system clipboard acceptance, browser-store review and publication are **not verified**. See [TESTING.md](TESTING.md).
 
 ## Features
 
@@ -28,7 +28,19 @@
 | Localization | Automatic or manual German, English, French, Italian and Spanish; locally bundled translations |
 | Design | Light/dark theme, responsive popup and editor, keyboard controls, reduced-motion and high-contrast support |
 
-### What's new in 1.18.0
+### What's new in 1.18.3
+
+- Undo up to five recently deleted screenshots in reverse order within the current popup session. Each deletion remains recoverable until five newer deletions push it out; the previous delete confirmation remains replaced by a recovery action. Clearing the entire history still requires confirmation.
+
+### Previously in 1.18.2
+
+- Added a session-only history Undo control for the latest deleted screenshot.
+
+### Previously in 1.18.1
+
+- **Safer history deletion:** deleting a single saved capture now requires confirmation. The prompt is available in all five supported languages; cancelling leaves stored data unchanged.
+
+### Previously in 1.18.0
 
 - **Faster history filtering:** typing in the search field or toggling favorites filters the current popup snapshot without repeatedly loading all stored PNG data from disk.
 - **Safer asynchronous updates:** obsolete overlapping history refreshes cannot overwrite a newer result; a history action cannot be triggered repeatedly while it is pending.

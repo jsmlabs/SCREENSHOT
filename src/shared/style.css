@@ -382,3 +382,17 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
    sizing here: it can lock the popup into Chrome's initial narrow viewport. */
 html.popup-root{width:384px;min-width:384px;max-width:none}
 html.popup-root body.popup{width:384px;min-width:384px;max-width:none}
+
+/* SCREENSHOT brand identity: shared mark, theme-aware monochrome. */
+.mark,.editor-mark{background:var(--text);color:var(--bg);border:1px solid color-mix(in srgb,var(--text) 82%,transparent);box-shadow:none}
+.mark .brand-symbol,.editor-mark .brand-symbol{display:block;width:27px;height:27px;flex:none}
+.brand strong,.editor-brand strong{font-weight:760;letter-spacing:.075em}
+@media (forced-colors:active){.mark,.editor-mark{border:1px solid CanvasText;background:Canvas;color:CanvasText}}
+
+/* Session-scoped recovery for a recently deleted history entry. */
+.popup .history-undo{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;margin:0 0 8px;border:1px solid var(--border);border-radius:9px;background:var(--surface);font-size:11px;color:var(--text)}
+.popup .history-undo[hidden]{display:none}
+.popup .history-undo button{flex-shrink:0;border:1px solid var(--border);border-radius:7px;padding:6px 9px;background:var(--ui-subtle);color:var(--text);font:inherit;font-weight:600;cursor:pointer}
+.popup .history-undo button:hover{border-color:var(--focus)}
+.popup .history-undo button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.popup .history-undo button:disabled{opacity:.55;cursor:wait}

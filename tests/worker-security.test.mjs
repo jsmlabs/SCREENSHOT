@@ -10,7 +10,7 @@ import {dirname,resolve} from 'node:path';
 import {timerSeconds,captureBounds,tilePositions,validateFullSize} from '../src/capture/capture-plan.mjs';
 import {createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS} from '../src/capture/capture-lifecycle.mjs';
 import {isTrustedUiSender,isSelectionSender} from '../src/shared/message-policy.mjs';
-const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../src/background/background.js'),'utf8').replace(/^import .*?;\n/gm,'');
+const source=readFileSync(resolve(dirname(fileURLToPath(import.meta.url)),'../src/background/background.js'),'utf8').replace(/^import .*?;\r?\n/gm,'');
 test('Untrusted runtime messages cannot start, cancel or open capture window',async()=>{
   let handler, called=0;
   const chrome={

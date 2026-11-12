@@ -1,17 +1,23 @@
 import {resolveLanguage,browserLanguages,applyTranslations,translate,translateError} from '../shared/i18n.mjs';
 import {normalizedCaptureName,libraryEntries,bytesLabel} from '../shared/history-library.mjs';
+import {createHistoryUndo} from '../shared/history-undo.mjs';
 import {safeFilename,SETTINGS_KEY, DEFAULT_SETTINGS, normalizeSettings, captureEntries, keysToPrune} from '../shared/preferences.mjs';
 const status = document.querySelector('#status');
 const languageField=document.querySelector('#interface-language');
 let language='en';
 const t = text => translate(language,text);
-function setInterfaceLanguage(){language=resolveLanguage(preferences.language,browserLanguages());applyTranslations(document.body,language);if(status.classList.contains('error')&&lastError)status.textContent=translateError(language,lastError);}
+function setInterfaceLanguage(){language=resolveLanguage(preferences.language,browserLanguages());applyTranslations(document.body,language);renderUndo();if(status.classList.contains('error')&&lastError)status.textContent=translateError(language,lastError);}
 const captureTimer = document.querySelector('#capture-timer');
 const autoSaveField=document.querySelector('#auto-save');
 const limitField=document.querySelector('#history-limit');
 const daysField=document.querySelector('#history-days');
 const historyList=document.querySelector('#capture-history');
 const clearHistoryButton=document.querySelector('#clear-history');
+const undoBanner=document.querySelector('#history-undo');
+const undoMessage=document.querySelector('#history-undo-message');
+const undoButton=document.querySelector('#history-undo-button');
+function renderUndo(){undoBanner.hidden=!historyUndo.canUndo;undoMessage.textContent=t('Aufnahme gelöscht.')+(historyUndo.count>1?` (${historyUndo.count})`:'');undoButton.textContent=t('Rückgängig');}
+const historyUndo=createHistoryUndo(chrome.storage.local,renderUndo);
 const searchField=document.querySelector('#history-search');
 const favoritesField=document.querySelector('#history-favorites');
 const countField=document.querySelector('#history-count');
@@ -105,10 +111,18 @@ function renderHistory(){
     action('↓','PNG exportieren',async()=>{
       await chrome.downloads.download({url:record.data,filename:safeFilename(new Date(),preferences.exportPrefix),saveAs:preferences.exportAskWhere,conflictAction:'uniquify'});
     });
-    action('×','Aufnahme löschen',async()=>{await chrome.storage.local.remove(key);await refreshHistory();});
+    action('×','Aufnahme löschen',async()=>{
+      await historyUndo.remove(key,record);await refreshHistory();
+    });
     item.append(open,actions);historyList.append(item);
   }
 }
+undoButton.addEventListener('click',async()=>{
+  undoButton.disabled=true;
+  try{if(await historyUndo.undo())await refreshHistory();}
+  catch(error){displayError(error);}
+  finally{undoButton.disabled=false;}
+});
 searchField.addEventListener('input',renderHistory);
 favoritesField.addEventListener('change',renderHistory);
 languageField.addEventListener('change',()=>void updatePreferences({language:languageField.value}));
@@ -120,7 +134,7 @@ askWhereField.addEventListener('change',()=>void updatePreferences({exportAskWhe
 captureTimer.addEventListener('change',()=>void updatePreferences({timer:Number(captureTimer.value)}));
 clearHistoryButton.addEventListener('click',async()=>{
   if(!window.confirm(t('Möchtest du alle Aufnahmen aus deinem lokalen Verlauf löschen? Diese Aktion kann nicht rückgängig gemacht werden.')))return;
-  try{const all=await chrome.storage.local.get(null);const keys=Object.keys(all).filter(k=>k.startsWith('capture:'));if(keys.length)await chrome.storage.local.remove(keys);await refreshHistory();}
+  try{const all=await chrome.storage.local.get(null);const keys=Object.keys(all).filter(k=>k.startsWith('capture:'));if(keys.length)await chrome.storage.local.remove(keys);historyUndo.clear();await refreshHistory();}
   catch(error){displayError(error);}
 });
 document.querySelector('#manage-shortcuts').addEventListener('click',()=>void chrome.tabs.create({url:'chrome://extensions/shortcuts'}).catch(displayError));

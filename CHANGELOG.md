@@ -1,3 +1,62 @@
+## 1.18.3 - Multiple history undo (2026-11-12)
+
+- Undo the five most recent individual history deletions in reverse order during the current popup session.
+- Preserve original capture metadata, protect reused keys, and retain undo entries after failed storage writes.
+- Show the number of recoverable deletions in the existing localized undo banner.
+- Keep bulk-clear confirmation and session-only recovery behavior unchanged.
+- No new extension permissions or dependencies; manual browser acceptance intentionally skipped.
+
+## 1.18.2 - Recover deleted screenshots (2026-11-12)
+
+- Replaced the per-capture confirmation dialog with a session-scoped Undo action in popup history.
+- Restore the last deleted capture under the original storage key, preserving image and metadata.
+- Keep the prior recovery available if a storage write fails; prevent overwriting a newly existing key.
+- Preserve the existing confirmation for deleting the entire history; clear pending recovery on full clear.
+- Localized recovery controls in five interface languages; no new permissions or dependencies.
+- Browser acceptance remains intentionally waived; runtime behavior has not been tested in Chrome.
+
+## 1.18.1 - History deletion confirmation (2026-11-12)
+
+- Confirm before permanently deleting an individual capture from local history. Cancelling leaves the item untouched.
+- Added confirmation text in German, English, French, Italian and Spanish.
+- Added two focused regression checks; no new permissions or runtime dependencies.
+- Chrome runtime and manual browser acceptance were not performed.
+
+## 1.18.0 - Conditional injected-script packaging verification (2026-11-12)
+
+- Verify both branches of literal conditional Chrome script-injection paths in the runtime packager.
+- Add regression coverage for a missing element-selection script.
+- No extension runtime files, permissions, or dependencies changed. Manual browser acceptance remains waived.
+
+## 1.18.0 - Runtime archive safety follow-up (2026-11-12)
+
+- Runtime packager now fails closed on hidden paths and files outside the supported extension-runtime types.
+- Added regression cases for a hidden `.env`, a nested hidden folder and an accidental backup file.
+- Source and runtime behavior unchanged; manual browser acceptance remains expressly waived.
+
+## 1.18.0 - Runtime packaging follow-up (2026-11-12)
+
+- Added an optional, dependency-free Python standard-library packager for a minimal Chromium runtime ZIP.
+- Added `docs/RELEASE-PACKAGING.md` to distinguish editable source delivery from the runtime archive.
+- No changes to extension runtime files, manifest permissions or version. Browser acceptance remains explicitly waived.
+
+## Branding asset-integrity audit (November 12, 2026, package revision)
+- Added PNG structural/CRC/decompressed-scanline verification for nine browser, logo and store images without new dependencies.
+- Full local Node suite passes 157/157; capture logic and manifest version are unchanged.
+- Manual browser acceptance remains explicitly waived.
+
+## Branding polish (November 12, 2026, package revision)
+- Centered the Precision logo geometry consistently in vector assets, live UI, raster icons, and promotional graphics.
+- Added a regression test for the mark alignment. No capture workflow logic or manifest version changed.
+- Recorded the owner-authorized manual browser acceptance waiver; browser operation remains unverified.
+
+## 2026-11-12 - Branding verification follow-up (local candidate)
+
+- Corrected CRLF compatibility in five existing Node VM worker-test harnesses.
+- Full local test suite now passes (155/155, Node.js v22.16.0).
+- No production capture logic, manifest permissions, or version changes in this follow-up.
+- Chrome/Edge runtime validation is still pending.
+
 ## 2026-11-12 - Reliability and responsiveness improvements (local working candidate)
 
 - Editor reuse now tolerates a tab disappearing between enumeration and navigation.
@@ -45,3 +104,14 @@
 
 ## History
 Earlier release notes are available in the previous release archives and historical PHASE reports.
+
+## 1.18.0 - Reproducible runtime packaging follow-up (2026-11-12)
+
+- Made runtime ZIP metadata deterministic for a fixed Python/zlib environment; verified exact included bytes.
+- Blocked symlinked runtime roots and output archives within packaged runtime folders.
+- Added three Python standard-library regression tests and updated packaging documentation.
+- Extension runtime source, public version and manifest permissions remain unchanged. Manual browser acceptance remains waived.
+
+2026-11-12: Strengthened runtime packaging to reject missing local HTML dependencies and missing manifest locale keys, with a focused regression test; no production runtime changes.
+
+2026-11-12: Packager now validates literal JavaScript ESM imports and Chrome runtime/injected resource references against packaged members; added focused negative regression cases. No runtime behavior changed.

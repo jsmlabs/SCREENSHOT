@@ -44,7 +44,7 @@ test('Visible capture stores unique image and focuses popup on each request', as
   };
   const context=vm.createContext({chrome,crypto:{randomUUID:()=>String(++nextId).padStart(36,'0')},console,Promise,setTimeout,Date,Number,Math});
   context.assertCaptureSource=assertCaptureSource;context.createCaptureLifecycle=createCaptureLifecycle;context.throwIfCancelled=throwIfCancelled;context.cancellableDelay=cancellableDelay;context.withTimeout=withTimeout;context.CAPTURE_TIMEOUT_MS=CAPTURE_TIMEOUT_MS;context.pageMetricsStable=pageMetricsStable;context.totalCaptureBytes=totalCaptureBytes;context.AbortController=AbortController;context.clearTimeout=clearTimeout;context.timerSeconds=timerSeconds;context.captureBounds=captureBounds;context.tilePositions=tilePositions;context.validateFullSize=validateFullSize;context.isTrustedUiSender=isTrustedUiSender;context.isSelectionSender=isSelectionSender;context.SETTINGS_KEY=SETTINGS_KEY;context.normalizeSettings=normalizeSettings;context.keysToPrune=keysToPrune;
-  vm.runInContext(source.replace(/^import .*?;\n/gm,''),context);
+  vm.runInContext(source.replace(/^import .*?;\r?\n/gm,''),context);
   const send=async message=>new Promise(resolve=>listeners.get('message')(message,{id:'test',url:'chrome-extension://test/src/popup/popup.html'},resolve));
   for(let n=0;n<2;n++){
     assert.equal((await send({type:'START',mode:'visible',tabId:1})).ok,true);

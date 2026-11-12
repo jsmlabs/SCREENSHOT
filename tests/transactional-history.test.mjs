@@ -21,7 +21,7 @@ function harness({failSet=false,failPreview=false}={}) {
   };
   const sandbox={chrome,crypto:{randomUUID:()=> 'b'.repeat(36)},console,Promise,setTimeout,clearTimeout,AbortController,Date,Number,Math,assertCaptureSource,createCaptureLifecycle,throwIfCancelled,cancellableDelay,withTimeout,CAPTURE_TIMEOUT_MS,pageMetricsStable,totalCaptureBytes,timerSeconds,captureBounds,tilePositions,validateFullSize,isTrustedUiSender,isSelectionSender,SETTINGS_KEY,normalizeSettings,keysToPrune};
   const context=vm.createContext(sandbox);
-  const source=readFileSync(new URL('../src/background/background.js',import.meta.url),'utf8').replace(/^import .*?;\n/gm,'');
+  const source=readFileSync(new URL('../src/background/background.js',import.meta.url),'utf8').replace(/^import .*?;\r?\n/gm,'');
   vm.runInContext(source+'\nglobalThis.__publishCapture = publishCapture;',context);
   return {publish:()=>context.__publishCapture({data:'data:image/png;base64,aGVsbG8=',mode:'visible'}),store,oldKey,get previews(){return previews;}};
 }
