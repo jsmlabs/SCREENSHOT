@@ -17,11 +17,11 @@ test('editor workspace controls cannot consume unbounded stage height',()=>{
 });
 test('failed preference writes restore displayed values, not just internal settings',()=>{
   assert.match(popup,/function syncPreferenceFields\(\)/);
-  assert.match(popup,/catch\(error\)\{preferences=previous;syncPreferenceFields\(\);displayError\(error\);\}/);
+  assert.match(popup,/catch\(error\)\{preferences=previous;syncPreferenceFields\(\);setInterfaceLanguage\(\);displayError\(error\);\}/);
   assert.match(popup,/const captureTimer = document\.querySelector\('#capture-timer'\)/);
 });
 test('UI version matches extension manifest',()=>{
   const manifest=JSON.parse(read('manifest.json'));
-  assert.equal(manifest.version,'1.10.0');
-  assert.match(read('popup.html'),/v1\.10\.0/);
+  assert.equal(manifest.version,'1.12.0');
+  assert.match(read('popup.html'),/v1\.12\.0/);
 });

@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "SCREENSHOT"
+  },
+  "appDescription": {
+    "message": "Capturez des zones, éléments, onglets, fenêtres et pages entières. Modifiez, copiez et enregistrez des PNG en local."
+  },
+  "actionTitle": {
+    "message": "SCREENSHOT - Capturer votre écran"
+  },
+  "visibleCommand": {
+    "message": "Capturer l’onglet visible"
+  },
+  "fullCommand": {
+    "message": "Capturer la page entière"
+  }
+}

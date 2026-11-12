@@ -1,6 +1,6 @@
 // Versioned local preferences. Images never leave the browser.
 export const SETTINGS_KEY = 'settings:v1';
-export const DEFAULT_SETTINGS = Object.freeze({timer:0,autoSave:false,historyLimit:10,historyDays:1});
+export const DEFAULT_SETTINGS = Object.freeze({timer:0,autoSave:false,historyLimit:10,historyDays:1,language:'auto'});
 export function normalizeSettings(value) {
   const input = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const timer = Number(input.timer);
@@ -10,7 +10,8 @@ export function normalizeSettings(value) {
     timer:[0,3,5,10].includes(timer) ? timer : DEFAULT_SETTINGS.timer,
     autoSave:input.autoSave === true,
     historyLimit:Number.isInteger(historyLimit)&&historyLimit>=1&&historyLimit<=20?historyLimit:DEFAULT_SETTINGS.historyLimit,
-    historyDays:[1,3,7].includes(historyDays)?historyDays:DEFAULT_SETTINGS.historyDays
+    historyDays:[1,3,7].includes(historyDays)?historyDays:DEFAULT_SETTINGS.historyDays,
+    language:['auto','de','en','fr','it','es'].includes(input.language)?input.language:DEFAULT_SETTINGS.language
   };
 }
 export function captureEntries(records, settings = DEFAULT_SETTINGS, now=Date.now()) {

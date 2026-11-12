@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "SCREENSHOT"
+  },
+  "appDescription": {
+    "message": "Bereiche, Elemente, Tabs, Fenster und ganze Seiten aufnehmen. Lokal bearbeiten, kopieren oder als PNG speichern."
+  },
+  "actionTitle": {
+    "message": "SCREENSHOT - Bildschirmaufnahme erstellen"
+  },
+  "visibleCommand": {
+    "message": "Sichtbaren Tab aufnehmen"
+  },
+  "fullCommand": {
+    "message": "Ganze Webseite aufnehmen"
+  }
+}

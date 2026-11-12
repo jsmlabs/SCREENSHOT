@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10,7 +10,7 @@
 <body class="popup">
   <header class="popup-header">
     <div class="brand"><span class="mark" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/><path d="M8 8h8v8H8z"/></svg></span><div><strong>SCREENSHOT</strong><small>Aufnehmen. Bearbeiten. Teilen.</small></div></div>
-    <span class="version" aria-label="Version 1.10.0">v1.10.0</span>
+    <span class="version" aria-label="Version 1.12.0">v1.12.0</span>
   </header>
   <main class="popup-content"><p class="popup-intro">Was möchtest du aufnehmen?</p>
     <div class="section-heading"><span>NEUE AUFNAHME</span><span class="section-meta">PNG-Format</span></div>
@@ -27,6 +27,7 @@
     </div>
     <details class="productivity-panel" id="preferences-panel"><summary><span>Einstellungen <small>Speichern, Verlauf &amp; Kürzel</small></span><span class="panel-arrow" aria-hidden="true">⌄</span></summary>
       <div class="productivity-fields">
+        <label class="setting-row" for="interface-language"><span>Sprache</span><select id="interface-language" aria-label="Sprache"><option value="auto">Automatisch (Browsersprache)</option><option value="de">Deutsch</option><option value="en">English</option><option value="fr">Français</option><option value="it">Italiano</option><option value="es">Español</option></select></label>
         <label class="setting-switch"><span>PNG zusätzlich herunterladen<small>Optional · wird im Download-Ordner gespeichert</small></span><input type="checkbox" id="auto-save"></label>
         <label class="setting-row">Maximal im Verlauf<select id="history-limit" aria-label="Maximale Anzahl Aufnahmen"><option value="5">5 Aufnahmen</option><option value="10">10 Aufnahmen</option><option value="20">20 Aufnahmen</option></select></label>
         <label class="setting-row">Verlauf aufbewahren<select id="history-days" aria-label="Verlauf aufbewahren"><option value="1">24 Stunden</option><option value="3">3 Tage</option><option value="7">7 Tage</option></select></label>

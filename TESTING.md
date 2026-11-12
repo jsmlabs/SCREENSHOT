@@ -1,4 +1,16 @@
-# Current verification – 1.10.0
+# SCREENSHOT v1.12.0 - Verification (2026-11-12)
+
+- Verified locally: `node --test tests/*.test.mjs` - **116 passed, 0 failed**.
+- Verified locally: `node tests/release-check.mjs` - **PASS**.
+- Verified locally: `node --check` for root JavaScript modules - **PASS**.
+- This evidence applies to the reconciled v1.12.0 source package, not a GitHub release or a signed Chrome Web Store distribution.
+- Real Chrome/Edge extension captures, system clipboard, window sharing, localization rendering and manual E2E acceptance remain **unverified**.
+
+---
+
+> **v1.11.0:** 112 automated tests passed; locale-specific Chrome UI acceptance still requires manual verification.
+
+# Historical verification - 1.10.0
 
 Automated checks: `node --test tests/*.test.mjs` and `node tests/release-check.mjs`. Full runtime acceptance in a locally installed Chrome extension is still required. Older checklists below describe prior release candidates.
 

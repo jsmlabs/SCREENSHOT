@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10,7 +10,7 @@
 <body class="editor">
   <header class="toolbar">
     <div class="editor-brand"><span class="editor-mark" aria-hidden="true"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" stroke-dasharray="3 3"/><path d="M8 8h8v8H8z"/></svg></span><div><strong>SCREENSHOT</strong><small>Bild bearbeiten · lokal</small></div></div>
-    <div class="toolbar-actions"><button id="window" hidden>Fenster auswählen</button><button id="copy" aria-label="In Zwischenablage kopieren" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span>Kopieren</span></button><button id="save" class="primary" aria-label="PNG speichern" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg><span>PNG speichern</span></button></div>
+    <div class="toolbar-actions"><button id="new-capture" type="button" aria-haspopup="dialog" aria-controls="new-capture-dialog" title="Neu aufnehmen"><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Neu aufnehmen</span></button><button id="window" hidden>Fenster auswählen</button><button id="copy" aria-label="In Zwischenablage kopieren" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><span>Kopieren</span></button><button id="save" class="primary" aria-label="PNG speichern" disabled><svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3"/></svg><span>PNG speichern</span></button></div>
   </header>
   <div class="workspace-toolbar">
     <div class="edit-controls" role="toolbar" aria-label="Bild bearbeiten">
@@ -42,6 +42,17 @@
   </div>
   <p class="notice" id="notice" role="status" aria-live="polite" aria-atomic="true">Bild wird geladen …</p>
   <main class="stage" id="stage"><div class="image-viewport" id="viewport" tabindex="0" aria-label="Screenshot-Vorschau: Zoom mit Mausrad, Bewegung im Hand-Modus."><img id="preview" alt="Screenshot-Vorschau" draggable="false" hidden><canvas id="overlay" aria-hidden="true"></canvas></div></main>
+  <dialog id="new-capture-dialog" class="new-capture-dialog" aria-labelledby="new-capture-title">
+    <div class="new-capture-heading"><div><strong id="new-capture-title">Neue Aufnahme</strong><p>Was möchtest du aufnehmen?</p></div><button type="button" id="new-capture-close" aria-label="Schliessen">×</button></div>
+    <div class="new-capture-modes">
+      <button type="button" data-new-mode="area"><strong>Bereich</strong><small>Ausschnitt selbst markieren</small></button>
+      <button type="button" data-new-mode="element"><strong>Element</strong><small>Ein Element gezielt erfassen</small></button>
+      <button type="button" data-new-mode="visible"><strong>Sichtbarer Tab</strong><small>Alles, was gerade sichtbar ist</small></button>
+      <button type="button" data-new-mode="window"><strong>Fenster</strong><small>Browserfenster erfassen</small></button>
+      <button type="button" data-new-mode="full"><strong>Ganze Seite</strong><small>Auch ausserhalb des Bildschirms</small></button>
+    </div>
+    <p id="new-capture-error" class="new-capture-error" role="alert" hidden></p>
+  </dialog>
   <script type="module" src="editor.js"></script>
 </body>
 </html>

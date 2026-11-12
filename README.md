@@ -4,232 +4,173 @@
 
 ### Capture precisely. Edit locally. Export instantly.
 
-A lightweight Chromium screenshot extension with five capture modes, a built-in image editor, automatic clipboard support, and local screenshot history.
+**Five capture modes · Built-in editor · Five interface languages · Local-first PNG workflow**
 
-[![Version](https://img.shields.io/badge/version-1.10.0-3b82f6?style=flat-square)](manifest.json)
-[![Manifest](https://img.shields.io/badge/Chrome_Manifest-V3-64748b?style=flat-square)](manifest.json)
+[![Version](https://img.shields.io/badge/version-1.12.0-3b82f6?style=flat-square)](manifest.json)
+[![Chrome](https://img.shields.io/badge/Chromium-Manifest_V3-64748b?style=flat-square)](manifest.json)
 [![License](https://img.shields.io/badge/license-MIT-16a34a?style=flat-square)](LICENSE)
-[![Release status](https://img.shields.io/badge/status-browser_validation_pending-f59e0b?style=flat-square)](TESTING.md)
+[![Validation](https://img.shields.io/badge/browser_acceptance-pending-f59e0b?style=flat-square)](TESTING.md)
 
-**[Install](#get-started)** · **[Capture](#capture-modes)** · **[Editor](#image-editor)** · **[Architecture](#architecture)** · **[Development](#development)** · **[Troubleshooting](#troubleshooting)**
+[Get started](#get-started) · [Captures](#capture-modes) · [Editing](#editor) · [Languages](#languages) · [Development](#development) · [Troubleshooting](#troubleshooting)
 
 </div>
 
 ---
 
 > [!IMPORTANT]
-> **Version distinction:** The public `main` branch currently contains **v1.10.0** (`manifest.json`). A separate **v1.12.0** project snapshot has been prepared with localization and a new capture workflow, but those files **have not yet been pushed to GitHub**. The version badge above deliberately reflects the installable source on `main`, not the pending update. Real Chrome/Edge end-to-end acceptance and Chrome Web Store publication are still unverified. See [TESTING.md](TESTING.md) and the [release report](PHASE-06-RELEASE-REPORT.md).
+> **Current source build: v1.12.0.** Local verification: 116/116 Node tests, static release check and JS syntax checks passed on 2026-11-12, but full interactive Chrome/Edge acceptance and Chrome Web Store publication remain **unverified**. See [TESTING.md](TESTING.md) for historical tests and release gates.
 
 ## Overview
 
-SCREENSHOT provides a focused screenshot workflow inside Chromium-based browsers:
+SCREENSHOT is a lightweight, dependency-free Chromium extension for capturing webpage regions, individual elements, visible tabs, full pages, or a browser-selected window. Every capture opens in a separate preview editor where it can be annotated, cropped, copied, and downloaded as PNG. The extension stores captures and user settings locally, without screenshot cloud uploads, analytics, or third-party UI frameworks.
 
-**Choose a target → Capture → Preview and edit → Copy or save PNG**
+**Capture → Preview → Edit → Copy / Save.** You can also launch another capture directly from the editor without discarding the original image.
 
-The currently published source uses a German-language interface, respects light/dark appearance, and processes screenshots locally rather than uploading them to an application cloud service. The codebase is built with native browser APIs and JavaScript modules, without a runtime package manager or external UI framework.
+## What's new
 
-### At a glance
-
-| | Capability | What it does |
+| Version | Feature | Details |
 | :-- | :-- | :-- |
-| 01 | **Area** | Draw a rectangle around part of a webpage |
-| 02 | **Element** | Select an HTML element's visible area |
-| 03 | **Visible tab** | Capture the portion currently in view |
-| 04 | **Window** | Choose a window using the browser's native sharing picker |
-| 05 | **Full page** | Scroll and stitch a webpage into a single image |
-| | **Image editor** | Crop, annotate, blur, pixelate, zoom, undo, and redo |
-| | **PNG workflow** | Attempt automatic original-image clipboard copy; manually copy or download edited PNGs |
-| | **Local productivity** | Capture timer, opt-in auto-save, local history, and configurable shortcuts |
-
-### Upcoming project version: 1.12.0 (not yet on `main`)
-
-The separately prepared v1.12.0 snapshot extends the current feature set:
-
-| Version | Addition | Availability |
-| :-- | :-- | :-- |
-| **1.10.0** | German-language consumer interface and core screenshot/editor workflow | On GitHub `main` |
-| **1.11.0** | Multi-language localization and language detection | Prepared locally, not pushed |
-| **1.12.0** | Start a new screenshot capture from the existing editor | Prepared locally, not pushed |
-
-**Do not assume that downloading this repository currently installs 1.12.0.** After the newer project files have been synchronized and verified on GitHub, update the version badge, installation details, and release status against the actual contents of `manifest.json`.
+| **1.12.0** | **New capture from the editor** | Opens a mode picker for all five modes, restores the original source tab when available, and keeps the existing editor open. [Details](NEW-CAPTURE-1.12.0.md) |
+| **1.11.0** | **Five-language UI** | Detects browser language or lets you select German, English, French, Italian, or Spanish. All translations are bundled locally. [Details](LOCALIZATION-1.11.0.md) |
+| **1.10.0** | **Consumer UI refinement** | Refined capture controls, responsive editor, consistent interface copy and contextual errors. [Details](CONSUMER-RELEASE-1.10.0.md) |
 
 ## Get started
 
 ### Requirements
 
-- A Chromium-based desktop browser with Manifest V3 extension support, such as **Google Chrome** or **Microsoft Edge**.
-- Permission to install an **unpacked extension** in the browser.
-- No Node.js, build process, or npm install required for normal use.
+- Desktop **Google Chrome**, **Microsoft Edge**, or a compatible Chromium browser supporting Manifest V3.
+- Permission to load an unpacked extension.
+- No dependencies or build tools required for normal use.
 
-### Install from GitHub
+### Install
 
-1. Download the repository using **Code → Download ZIP**, or clone it:
+1. Download this repository as a ZIP from **Code → Download ZIP**, or clone it:
    ```bash
    git clone https://github.com/jsmlabs/SCREENSHOT.git
    ```
-2. If using a ZIP, extract it into a permanent folder.
-3. Open `chrome://extensions` in Chrome or `edge://extensions` in Edge.
-4. Turn on **Developer mode**.
-5. Select **Load unpacked** / **Entpackte Erweiterung laden**.
-6. Select the directory containing **`manifest.json`**, then optionally pin SCREENSHOT to the toolbar.
-7. Open a normal HTTP(S) webpage and choose a capture mode.
+2. Extract the ZIP if applicable.
+3. Open `chrome://extensions` or `edge://extensions`.
+4. Enable **Developer mode**, click **Load unpacked**, and select the folder containing `manifest.json`.
+5. Pin the extension if desired, open a normal HTTP(S) webpage, and select a capture mode.
 
-> [!NOTE]
-> The extension is **not** installed by opening `popup.html` directly. Chrome/Edge must load the directory through its Extensions page. Browser-internal and other protected pages cannot be captured by regular extension APIs.
-
-### Update an existing unpacked install
-
-Replace or update the files in the **same installed extension directory**, then click **Reload** on the extension card. Existing previews may need to be reopened. Do not assume saved local storage is removed by reloading.
+To update an existing unpacked installation, replace the source files **in its installed directory**, then click **Reload** in the extensions manager. This repository has no verified Chrome Web Store release.
 
 ## Capture modes
 
-| Mode in the UI | Use it for | Notes |
+| Mode | Capture target | Important behavior |
 | :-- | :-- | :-- |
-| **Bereich** (Area) | Custom sections, charts, or page details | Drag to select; `Esc` cancels |
-| **Element** | Cards, panels, components, or visible DOM elements | Captures the element's **visible viewport intersection**, not offscreen content |
-| **Sichtbarer Tab** (Visible tab) | Current webpage view | Captures the visible tab area |
-| **Fenster** (Window) | A browser-selected window | Requires explicit native picker consent through `getDisplayMedia` |
-| **Ganze Seite** (Full page) | Long webpages and documentation | Scroll/stitch capture, subject to dynamic-page and size limits |
+| **Area** | A drawn rectangle | Drag to select; `Esc` cancels. |
+| **Element** | Visible DOM element | Only the viewport-visible portion is captured. |
+| **Visible tab** | Current tab viewport | Captures the content currently on screen. |
+| **Window** | Window selected through browser picker | Requires explicit `getDisplayMedia` permission. |
+| **Full page** | Scrollable webpage | Scroll-and-stitch capture with bounds and layout checks. |
 
-**Full-page accuracy:** The engine calculates output geometry from actual captured bitmaps, validates tile positions and dimensions, and attempts to restore the original scroll position and temporary page changes. This is a best-effort screenshot stitcher, **not** a pixel-perfect DOM renderer; animation, lazy loading, nested scrolling, sticky UI, or layout shifts can cause artifacts or a visible capture failure.
+The optional capture timer supports **0, 3, 5, and 10 seconds**. Full-page capture uses tile geometry calculated from actual bitmap dimensions and attempts to restore the original page position and temporary DOM changes. Dynamic layouts, animation, lazy loading, sticky components, and nested scrolling can disrupt full-page stitching.
 
-### Capture delay
+### New capture without leaving the editor
 
-Select **Sofort**, **3**, **5**, or **10 Sekunden** in the popup. For selection-based captures, the delay starts after the target is selected; for window capture, it starts after the native picker is confirmed. There is no on-page countdown overlay.
+Click **New capture / Neu aufnehmen** in the editor header, select one of the five modes, and take another screenshot. SCREENSHOT attempts to return to the original source web tab (or another active HTTP(S) tab for older history items). Your existing editing window and image remain unchanged; successful new captures open in a separate editor window. See [v1.12.0 design notes](NEW-CAPTURE-1.12.0.md).
 
-## Image editor
+## Editor
 
-Each successful capture opens in a separate resizable preview window. Editing is non-destructive in the current session: the original screenshot is preserved while the editor maintains an undoable series of changes.
+Capture previews open as independent resizable windows. Editing is non-destructive while the window is open, with undoable annotation and crop actions.
 
-### Tools
-
-| Tool | Action | Shortcut |
+| Tool | Shortcut | What it does |
 | :-- | :-- | :-- |
-| Hand | Pan around the image | `V` |
-| Selection | Select and move an annotation | `S` |
-| Crop | Trim the image to a rectangle | `C` |
-| Rectangle | Outline an area | `R` |
-| Arrow | Point to a detail | `A` |
-| Pen | Draw freely | `P` |
-| Text | Add or edit a text note | `T` |
-| Blur | Blur a rectangular region | `B` |
-| Pixelate | Pixelate a rectangular region | `I` |
-| Remove selection | Delete selected annotation | `Delete` |
+| Hand | `V` | Pan and move the viewport |
+| Select | `S` | Select, reposition, and modify existing annotations |
+| Crop | `C` | Crop to a rectangle |
+| Rectangle | `R` | Draw outlined boxes |
+| Arrow | `A` | Emphasize a direction or detail |
+| Pen | `P` | Draw freehand |
+| Text | `T` | Insert editable text |
+| Blur | `B` | Blur a selected region |
+| Pixelate | `I` | Pixelate a selected region |
+| Remove | `Delete` | Delete selected annotation |
 
-Other controls:
-
-- **Undo:** `Ctrl+Z`; **Redo:** `Ctrl+Y` or `Ctrl+Shift+Z` (also Command equivalents on macOS).
-- **Fit:** `0`; **1:1 zoom:** `1`; **zoom in/out:** `+` / `-` when no input or button has focus.
-- **Mouse wheel:** Zoom toward the cursor; drag in Hand mode to pan; double-click in Hand mode to fit.
-- **Esc:** Return to Hand mode.
-- Annotation color and 2/4/8/12 px stroke width can be changed; selected annotations can be moved, changed, or removed.
-
-**Export:** **Kopieren** copies the **edited** PNG; **PNG speichern** downloads the **edited** PNG at image resolution, independently of the current preview zoom. Current-session editor history is limited and does not persist after closing the preview.
+Additional shortcuts: `Ctrl+Z` undo; `Ctrl+Y` or `Ctrl+Shift+Z` redo; `0` fit image; `1` 100% zoom; `+` / `-` zoom; `Esc` hand tool. The editor supports wheel zoom, pan, configurable color and stroke strength, and exporting the **edited full-resolution PNG** independent of preview zoom. Editing history does not survive window closure.
 
 > [!WARNING]
-> **Blur and pixelation are visual effects, not guaranteed secure redaction.** Do not rely on them alone to remove passwords, credentials, personal information, or other secrets before sharing an image.
+> Blur and pixelation **are not secure redaction**. Do not depend on these effects to remove confidential data from images before distribution.
 
-## Clipboard, downloads, and history
+## Clipboard, saving, and history
 
-### Clipboard behavior
+- **Automatic copy:** After the original image renders and the preview is focused, SCREENSHOT attempts to write the original PNG to the clipboard. Browser/OS policy may delay or deny this operation. A success status is shown only after a successful write.
+- **Manual copy:** **Copy / Kopieren** copies the **edited** PNG. Manual copying cancels a pending original-image copy to prevent overwriting the edited result.
+- **Manual save:** **Save PNG / PNG speichern** downloads the edited image at its original image resolution.
+- **Automatic download:** Optional and **off by default**. Downloads an original image when newly captured; history reopening should not auto-download again.
+- **History:** Stores original screenshots in `chrome.storage.local`; the settings allow **5, 10, or 20 captures** and **1, 3, or 7 days** of retention. Entries can be reopened or deleted; cleanup occurs when captures are published or the popup opens rather than at a guaranteed scheduled time.
+- **Capture shortcuts:** Assign visible-tab and full-page shortcuts at `chrome://extensions/shortcuts`. Neither is enabled by default.
 
-SCREENSHOT attempts to copy the **original PNG** automatically after a successfully rendered capture preview has focus. The operation can be deferred by browser focus or permission restrictions. A successful status is shown only after the clipboard API resolves.
+## Languages
 
-If automatic copying is blocked, refocus or interact with the preview or use **Kopieren** manually. Manually copying the edited image cancels pending original-image auto-copy so that a later retry does not unexpectedly replace it. Clipboard permissions and cross-application paste behavior depend on the browser and operating system.
+SCREENSHOT bundles five interface languages:
 
-### Settings
+| Language | Code |
+| :-- | :-- |
+| Deutsch | `de` |
+| English | `en` |
+| Français | `fr` |
+| Italiano | `it` |
+| Español | `es` |
 
-The popup's **Einstellungen** panel offers:
-
-| Setting | Values | Default behavior |
-| :-- | :-- | :-- |
-| Capture delay | 0 / 3 / 5 / 10 seconds | Immediate |
-| Automatic PNG download | On / off | **Off** |
-| Maximum history entries | 5 / 10 / 20 | Configurable |
-| History retention | 1 / 3 / 7 days | Configurable |
-| Capture shortcuts | User-selected browser shortcuts | **No preassigned shortcut** |
-
-Auto-save downloads the original capture, not subsequent edits. Reopening an item from history is not intended to trigger another automatic download. Use **PNG speichern** to export the edited result separately.
-
-History stores original captures locally via `chrome.storage.local`; items can be reopened, deleted individually, or cleared. Expired captures are pruned when new captures are published or the popup is opened, **not necessarily at the exact expiry time**. In-progress annotations are not stored in history.
-
-Capture shortcuts for **visible tab** and **full page** are assigned through `chrome://extensions/shortcuts` (also linked from the popup).
+The default **Automatic** setting uses preferred browser languages and falls back to English when unsupported. Open **Settings → Language** to select a language manually. Regional variants such as `de-CH` use the base language. The popup updates immediately; the editor applies the selected language when reopened. Chrome extension metadata is translated through `_locales` and `default_locale`. Some browser error messages and detailed system status text can remain untranslated. No network-based translation service is used.
 
 ## Privacy and permissions
 
-SCREENSHOT does not implement a cloud screenshot service, third-party telemetry, or remote upload in the inspected project. Captured PNGs and retained history are stored in the browser's local extension storage; users can export images explicitly through the clipboard and downloads.
+Capture data and preferences are kept in the extension's local browser storage. There is no implemented cloud screenshot synchronization, remote telemetry, or third-party analytics in this source snapshot. Clipboard writes and downloads are explicitly supported workflows, and installing the extension grants the following browser API permissions:
 
-The current `manifest.json` requests the following permissions:
-
-| Permission | Purpose |
+| Permission | Why it is used |
 | :-- | :-- |
-| `activeTab` | Access the user-selected active tab for captures |
-| `scripting` | Inject selection/capture helpers into permitted pages |
-| `tabs` | Coordinate source tabs and capture windows |
-| `storage` | Persist capture data, history, and preferences |
-| `unlimitedStorage` | Support local image-history storage beyond small default quotas |
-| `offscreen` | Compose/crop screenshot images in an offscreen document |
-| `clipboardWrite` | Copy PNG images to the clipboard |
-| `downloads` | Save PNGs, including optional automatic downloads |
+| `activeTab` | Capture the selected active tab |
+| `scripting` | Run selection/capture helpers in allowed pages |
+| `tabs` | Coordinate tab selection and navigation |
+| `storage` | Store preferences and local capture history |
+| `unlimitedStorage` | Support large locally stored PNGs |
+| `offscreen` | Image composition and cropping |
+| `clipboardWrite` | Write PNGs to the clipboard |
+| `downloads` | Optional auto-save and manual PNG export |
 
-The manifest does not declare `host_permissions` or `externally_connectable`. Permission names describe API access, **not** a guarantee of browser approval on every page. For the recorded security review and validation limitations, see [Phase 06 release report](PHASE-06-RELEASE-REPORT.md).
+The manifest does not request blanket `host_permissions` or `externally_connectable`. For a security review with validation scope, see [PHASE-06-RELEASE-REPORT.md](PHASE-06-RELEASE-REPORT.md).
 
 ## Architecture
 
 ```text
-Browser toolbar popup
-  popup.html / popup.js
+popup.html / popup.js              User controls, settings, history
         |
         v
-  background.js             MV3 service worker / capture orchestration
-        |
-        +-- selection.js    Area selection
-        +-- element-selection.js
-        +-- capture-plan.mjs / capture-fidelity.mjs
-        |
-        +-- offscreen.html / offscreen.js
-        |       Image decoding, cropping and full-page stitching
-        |
-        +-- chrome.storage.local
-        |       Captures, preferences and history
-        |
-        +-- editor.html / editor.js
-                Preview, image tools, PNG export and clipboard
+background.js                     Manifest V3 capture orchestration
+        |-- selection.js           Rectangle selection
+        |-- element-selection.js   DOM element selection
+        |-- capture-*.mjs          Lifecycle, fidelity, validation
+        |-- offscreen.js           Crop and full-page image composition
+        +-- chrome.storage.local   Capture data, preferences, history
+                    |
+                    v
+editor.html / editor.js           Preview, editing and new capture
+        |-- edit-*.mjs             Editing model, objects and rendering
+        |-- new-capture.mjs        Repeat-capture logic
+        +-- i18n.mjs / locales.mjs  Localized interface strings
+
+_locales/                          Chrome manifest localization
+style.css                          Shared dark/light design system
+tests/                             Node and optional browser checks
 ```
 
-Additional focused modules cover lifecycle control, capture integrity, message policy, image editing, clipboard flow, preferences, and viewport geometry. Styles are shared in `style.css`.
-
-**Implementation principles:** Chrome Manifest V3, plain HTML/CSS/JavaScript, native browser APIs, locally stored captures, isolated capture sessions, bounded capture processing, and a single shared design system.
+**Design choices:** Standard HTML/CSS/JavaScript modules, Chrome Manifest V3, native browser APIs, no JavaScript dependency installation, local-first image processing, bounded capture resources, and a responsive dark/light UI.
 
 ## Development
 
-### Project structure
+### Automated verification
 
-| Path | Responsibility |
-| :-- | :-- |
-| `manifest.json` | Extension metadata, permissions, commands, entry points |
-| `popup.html`, `popup.js` | Capture choices, settings, status, history |
-| `background.js` | Capture workflow and privileged extension coordination |
-| `selection.js`, `element-selection.js` | On-page target selection |
-| `offscreen.js` | Canvas composition and image processing |
-| `editor.html`, `editor.js` | Preview and editor interaction |
-| `edit-*.mjs` | Editing state, objects, rendering |
-| `capture-*.mjs` | Capture planning, recovery, fidelity and validation |
-| `clipboard*.mjs`, `preferences.mjs` | Clipboard and local settings logic |
-| `style.css` | Popup/editor presentation and responsive layouts |
-| `tests/` | Node checks and optional browser test harnesses |
-| `COMMIT-PUSH.bat` | Interactive Windows Git publish helper |
-
-### Run automated checks
-
-**Node.js 20+** is required for the Node test suite (not for extension installation).
+Requires **Node.js 20+** (for development only):
 
 ```bash
 node --test tests/*.test.mjs
 node tests/release-check.mjs
 ```
 
-Optional browser harnesses require **Python, Playwright, and a Chromium installation**:
+Optional browser harnesses require Python, Playwright, and Chromium:
 
 ```bash
 python tests/browser_e2e.py
@@ -237,23 +178,13 @@ python tests/browser_ui.py
 python tests/browser_quick_edit.py
 ```
 
-These browser tests depend on launching and controlling Chromium; they may be blocked by local policy or environment restrictions. See [TESTING.md](TESTING.md) before interpreting their results.
+**Verified on the uploaded v1.12.0 archive for this synchronization:** **116/116 Node tests passed** and the release-structure check passed, executed with Node.js 22.16.0. These checks do **not** validate actual Chrome capture interactions, system clipboard, DPI behavior, or Chrome Web Store readiness. Browser acceptance remains an open release gate; consult [TESTING.md](TESTING.md) for scope and historical checks.
 
-**Verification status:** The stored Phase 06 report records **102 passing Node tests, a passing static release check, and passing JS syntax checks** in its test environment. That is historical test evidence, **not a claim that those tests were rerun for this README update or that browser functionality was fully validated**. Chrome/Edge capture, OS clipboard paste, OS window focus, browser permissions, live editing, and real-device scaling still require manual acceptance.
+### Windows Git publishing
 
-### Git publish helper (Windows)
+The project also uses `COMMIT-PUSH.bat` for a guided Git workflow with a colorized terminal, repository validation, staged-change review, commit prompt and explicit push confirmation. If you are working from an extracted ZIP, you must connect its files to an actual Git working tree rather than assuming the archive includes `.git`. Always review additions **and deletions** before committing, particularly when reconciling extracted archives with existing GitHub history. No force-push is required or recommended.
 
-The optional `COMMIT-PUSH.bat` provides a colorized command-line interface for reviewing changes, staging, committing and pushing to `jsmlabs/SCREENSHOT`.
-
-1. Install **Git for Windows** and configure GitHub authentication and commit identity.
-2. Run `COMMIT-PUSH.bat` from the repository root.
-3. Review the changed-file summary, enter a commit message, and confirm before publishing.
-
-The helper can recover missing Git metadata and remotes, fetch recent GitHub history, and synchronize its local baseline without overwriting working files. It also blocks publication when the essential `.gitignore` or `LICENSE` files are missing. **Inspect every staged change**, especially deletions when connecting a ZIP folder to an existing remote history. An update to the script on GitHub does not automatically replace an older local copy.
-
-If `git push` reports `fetch first`, do not force-push: update the local script, fetch the branch, inspect divergence and changes, and retry only after reconciling the history. A Git commit of the README alone does **not** publish the pending v1.12.0 code. Do not use this helper as a substitute for checking `git diff --cached`.
-
-For a standard command-line workflow:
+Manual workflow:
 
 ```bash
 git status
@@ -263,79 +194,59 @@ git commit -m "Describe the change"
 git push origin main
 ```
 
-## Known limitations
+## Limitations
 
-- **Protected pages:** Chromium internal pages, restricted browser UI, and other prohibited URLs cannot be captured.
-- **Element capture:** Only the visible portion is captured; cross-origin frames and some shadow DOM boundaries limit selection.
-- **Full-page capture:** Scrolling pages can shift or load content. Dynamic layouts, sticky elements, animation, and nested scroll containers may degrade results or cause a deliberate failure.
-- **Image size:** The capture engine enforces bounded dimensions (including documented 32,000 px height and 80 million physical pixels) and image-data budgets; browser canvas/memory limits may be lower.
-- **Window selection:** The native sharing picker requires explicit user interaction and may behave differently across browsers/OSes.
-- **Clipboard/focus:** Clipboard writes and foreground window requests can be denied or delayed by browser or OS policy.
-- **Session editing:** Editor undo history does not persist in saved screenshot history.
-- **Security:** Blur/pixelation should never be treated as a secure redaction mechanism.
+- Restricted browser pages (such as `chrome://` and `edge://`) cannot be captured using ordinary extension APIs.
+- Full-page captures can fail on dynamic pages or produce layout artifacts; pixel size, height, and memory budgets are enforced.
+- Selected HTML elements are limited to their visible area, with cross-origin frame and some shadow DOM restrictions.
+- OS/window picker consent and clipboard permissions depend on the environment.
+- Source-image editing history is per window, not persisted in the stored screenshot history.
+- Blur/pixelation are not a cryptographic or guaranteed privacy-protecting redaction mechanism.
 
 ## Troubleshooting
 
-<details>
-<summary><strong>SCREENSHOT is not visible after installation</strong></summary>
+<details><summary><strong>Extension is not available in the toolbar</strong></summary>
 
-Check that you selected the directory containing `manifest.json`, enabled Developer mode, and used **Load unpacked**. Open the extension card to inspect errors and reload after updating files. Pin the extension from the browser toolbar if needed.
-
-</details>
-
-<details>
-<summary><strong>Capture does not start on a page</strong></summary>
-
-Try a regular HTTP(S) webpage rather than `chrome://`, `edge://`, a Web Store page, or another browser-protected URL. Inspect popup status text and extension errors. Cancel and retry if a selection is already active.
+Check that you selected the directory containing `manifest.json`, enabled Developer mode, and used **Load unpacked** in your browser's extensions page. Reload it after a source update and pin it if desired.
 
 </details>
 
-<details>
-<summary><strong>Automatic clipboard copy did not happen</strong></summary>
+<details><summary><strong>Cannot capture the selected tab</strong></summary>
 
-Focus the preview, click or press a key, and retry with **Kopieren**. Browser clipboard permission and OS integration can block automatic writes. Confirm the result by pasting into an application such as Paint; a successful PNG preview alone does not prove clipboard access.
-
-</details>
-
-<details>
-<summary><strong>Full-page image has seams or a layout error</strong></summary>
-
-Retry on a stable page after content finishes loading. Animated regions, sticky headers, scroll-driven layout changes, and lazy-loaded content can break deterministic stitching. A visible error is preferable to silently exporting a corrupted composite.
+Try a normal HTTP(S) webpage; internal or browser-protected pages are unsupported. Cancel active selections and review the popup status and extension errors before retrying.
 
 </details>
 
-<details>
-<summary><strong>The Windows publish script reports Git or origin errors</strong></summary>
+<details><summary><strong>Automatic clipboard copy did not occur</strong></summary>
 
-Download the **latest** `COMMIT-PUSH.bat` into the project root. Confirm Git is installed and review `git status` and `git remote -v`. The script can configure missing repository metadata/remote connections, but it must be allowed to do so and cannot replace GitHub authentication. If a push is rejected because the remote changed, inspect and reconcile the history instead of force-pushing.
+Focus and interact with the preview, then try the manual Copy button. Confirm actual success by pasting into a native application. Browser permissions may prevent background clipboard access.
 
 </details>
 
-## Repository maintenance
+<details><summary><strong>Full-page screenshot has seams or fails</strong></summary>
 
-The checked-in browser extension is the source of truth for installable functionality. The current version remains **1.10.0** until a complete, reviewed implementation is committed; previously prepared 1.11.0/1.12.0 snapshots are not present in this branch.
+Wait for dynamic loading to settle, avoid animated pages, and retry. Scrolling, changing layout bounds, and nested scroll containers may prevent a reliable stitch.
 
-- Runtime source, assets and regression tests remain at their existing paths.
-- Superseded development reports live in [docs/archive](docs/archive/); they document historical work and do not describe the current release.
-- Local screenshot exports and generated packages are excluded from Git. Keep user captures outside the repository or in an ignored `screenshots/` directory.
-- The project has no npm manifest or third-party runtime dependency to upgrade. Do not add an npm build pipeline solely to make a version update.
-- The automated checks and real Chrome/Edge acceptance gates below remain prerequisites for an actual new release.
+</details>
 
-## Release status and documentation
+<details><summary><strong>COMMIT-PUSH.bat reports Git/remote problems</strong></summary>
 
-The **GitHub `main` source tree** currently identifies itself as **v1.10.0** in `manifest.json` and the popup. The separately prepared **v1.12.0** snapshot is **not** yet merged into this branch. The current development documentation explicitly marks the real-browser release gate as **pending**; do not interpret the version badge as a published or fully end-to-end-tested Chrome Web Store release.
+Verify that Git for Windows is installed; inspect `git status` and `git remote -v`. If the repository is extracted from a ZIP, connect to a proper Git clone while preserving existing local files. Never force-push an unreviewed state.
 
-| Document | Content |
-| :-- | :-- |
-| [Consumer release 1.10.0](CONSUMER-RELEASE-1.10.0.md) | Published source's UI polish scope and release prerequisites |
-| [Testing](TESTING.md) | Automated evidence, historical checklists, and open acceptance items |
-| [Phase 06 release report](PHASE-06-RELEASE-REPORT.md) | Security/performance review and release HOLD decision |
-| [Historical release candidate notes](docs/archive/RELEASE-CANDIDATE.md) | Earlier release-candidate technical context |
-| [Historical UI repair report](docs/archive/UI-REPAIR-REPORT-v1.9.1.md) | Prior UI repair details |
+</details>
+
+## Project documentation
+
+- [v1.12.0: New capture](NEW-CAPTURE-1.12.0.md)
+- [v1.11.0: Localization](LOCALIZATION-1.11.0.md)
+- [v1.10.0: Consumer polish](CONSUMER-RELEASE-1.10.0.md)
+- [Test records and outstanding release gates](TESTING.md)
+- [Security/performance release review](PHASE-06-RELEASE-REPORT.md)
+- [Earlier release candidate notes](docs/archive/RELEASE-CANDIDATE.md)
 
 ## License
 
-Licensed under the **[MIT License](LICENSE)**. Copyright © 2026 JSM.
+Released under the **[MIT License](LICENSE)**. Copyright © 2026 JSM.
 
 ---
 
@@ -343,6 +254,6 @@ Licensed under the **[MIT License](LICENSE)**. Copyright © 2026 JSM.
 
 **SCREENSHOT** · Capture precisely. Edit locally. Export instantly.
 
-[Source code](https://github.com/jsmlabs/SCREENSHOT) · [Report an issue](https://github.com/jsmlabs/SCREENSHOT/issues) · [License](LICENSE)
+[Repository](https://github.com/jsmlabs/SCREENSHOT) · [Issues](https://github.com/jsmlabs/SCREENSHOT/issues) · [License](LICENSE)
 
 </div>

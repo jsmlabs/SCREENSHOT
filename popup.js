@@ -1,5 +1,10 @@
+import {resolveLanguage,browserLanguages,applyTranslations,translate} from './i18n.mjs';
 import {SETTINGS_KEY, DEFAULT_SETTINGS, normalizeSettings, captureEntries, keysToPrune} from './preferences.mjs';
 const status = document.querySelector('#status');
+const languageField=document.querySelector('#interface-language');
+let language='en';
+const t = text => translate(language,text);
+function setInterfaceLanguage(){language=resolveLanguage(preferences.language,browserLanguages());applyTranslations(document.body,language);}
 const captureTimer = document.querySelector('#capture-timer');
 const autoSaveField=document.querySelector('#auto-save');
 const limitField=document.querySelector('#history-limit');
@@ -9,6 +14,7 @@ const clearHistoryButton=document.querySelector('#clear-history');
 let preferences={...DEFAULT_SETTINGS};
 let ready=false;
 function syncPreferenceFields(){
+  languageField.value=preferences.language;
   captureTimer.value=String(preferences.timer);
   autoSaveField.checked=preferences.autoSave;
   limitField.value=String(preferences.historyLimit);
@@ -19,6 +25,7 @@ async function loadPreferences(){
   try{
     preferences=normalizeSettings((await chrome.storage.local.get(SETTINGS_KEY))[SETTINGS_KEY]);
     syncPreferenceFields();
+    setInterfaceLanguage();
     ready=true;
     await refreshHistory(true);
   }catch(error){displayError(error);}
@@ -29,9 +36,10 @@ async function updatePreferences(patch){
   preferences=normalizeSettings({...preferences,...patch});
   try{
     await chrome.storage.local.set({[SETTINGS_KEY]:preferences});
+    setInterfaceLanguage();
     await refreshHistory(true);
     if(status.classList.contains('error')){status.className='';status.textContent='';}
-  }catch(error){preferences=previous;syncPreferenceFields();displayError(error);}
+  }catch(error){preferences=previous;syncPreferenceFields();setInterfaceLanguage();displayError(error);}
 }
 async function refreshHistory(prune=false){
   const all=await chrome.storage.local.get(null);
@@ -39,30 +47,31 @@ async function refreshHistory(prune=false){
   const entries=captureEntries(all,preferences).slice(0,preferences.historyLimit);
   historyList.replaceChildren();
   clearHistoryButton.hidden=!entries.length;
-  if(!entries.length){const empty=document.createElement('p');empty.className='empty-history';empty.textContent='Deine letzten Aufnahmen erscheinen hier.';historyList.append(empty);return;}
+  if(!entries.length){const empty=document.createElement('p');empty.className='empty-history';empty.textContent=t('Deine letzten Aufnahmen erscheinen hier.');historyList.append(empty);return;}
   const labels={area:'Bereich',element:'Element',visible:'Sichtbarer Tab',window:'Fenster',full:'Ganze Seite'};
   for(const [key,record] of entries){
     const item=document.createElement('div');item.className='history-item';
     const open=document.createElement('button');open.type='button';open.className='history-open';
-    const mode=document.createElement('strong');mode.textContent=labels[record.mode]||'Aufnahme';
-    const time=document.createElement('small');time.textContent=new Date(record.created).toLocaleString('de-CH');
+    const mode=document.createElement('strong');mode.textContent=t(labels[record.mode]||'Aufnahme');
+    const time=document.createElement('small');time.textContent=new Date(record.created).toLocaleString(language);
     open.append(mode,time);
     open.addEventListener('click',async()=>{
       open.disabled=true;
       try{const response=await chrome.runtime.sendMessage({type:'OPEN_HISTORY_CAPTURE',id:key.slice(8)});if(!response?.ok)throw new Error(response?.error||'Die Aufnahme konnte nicht geöffnet werden. Versuche es erneut.');window.close();}
       catch(error){displayError(error);open.disabled=false;}
     });
-    const del=document.createElement('button');del.type='button';del.className='history-delete';del.textContent='×';del.title='Aufnahme löschen';del.setAttribute('aria-label','Aufnahme löschen');
+    const del=document.createElement('button');del.type='button';del.className='history-delete';del.textContent='×';del.title=t('Aufnahme löschen');del.setAttribute('aria-label',t('Aufnahme löschen'));
     del.addEventListener('click',async()=>{try{await chrome.storage.local.remove(key);await refreshHistory();}catch(error){displayError(error);}});
     item.append(open,del);historyList.append(item);
   }
 }
+languageField.addEventListener('change',()=>void updatePreferences({language:languageField.value}));
 autoSaveField.addEventListener('change',()=>void updatePreferences({autoSave:autoSaveField.checked}));
 limitField.addEventListener('change',()=>void updatePreferences({historyLimit:Number(limitField.value)}));
 daysField.addEventListener('change',()=>void updatePreferences({historyDays:Number(daysField.value)}));
 captureTimer.addEventListener('change',()=>void updatePreferences({timer:Number(captureTimer.value)}));
 clearHistoryButton.addEventListener('click',async()=>{
-  if(!window.confirm('Möchtest du alle Aufnahmen aus deinem lokalen Verlauf löschen? Diese Aktion kann nicht rückgängig gemacht werden.'))return;
+  if(!window.confirm(t('Möchtest du alle Aufnahmen aus deinem lokalen Verlauf löschen? Diese Aktion kann nicht rückgängig gemacht werden.')))return;
   try{const all=await chrome.storage.local.get(null);const keys=Object.keys(all).filter(k=>k.startsWith('capture:'));if(keys.length)await chrome.storage.local.remove(keys);await refreshHistory();}
   catch(error){displayError(error);}
 });
@@ -77,7 +86,7 @@ buttons.forEach(button => button.addEventListener('click', async () => {
   const timer = Number(captureTimer.value);
   buttons.forEach(b => b.disabled = true); captureTimer.disabled = true;
   status.className = 'busy';
-  status.textContent = mode === 'full' ? 'Die gesamte Seite wird aufgenommen …' : 'Aufnahme wird vorbereitet …';
+  status.textContent = t(mode === 'full' ? 'Die gesamte Seite wird aufgenommen …' : 'Aufnahme wird vorbereitet …');
   try {
     if (mode === 'window') {
       const response = await chrome.runtime.sendMessage({type:'OPEN_WINDOW_PREVIEW',timer});
@@ -108,7 +117,7 @@ async function refreshCaptureStatus() {
       captureTimer.disabled = true;
       status.className = 'busy';
       const labels = {selecting:'Bitte wähle den gewünschten Bereich aus',capturing:'Aufnahme wird erstellt',processing:'Bild wird vorbereitet',publishing:'Editor wird geöffnet'};
-      status.textContent = labels[result.state] || 'Aufnahme wird erstellt';
+      status.textContent = t(labels[result.state] || 'Aufnahme wird erstellt');
     } else {
       buttons.forEach(button => button.disabled = false);
       captureTimer.disabled = false;
@@ -118,7 +127,7 @@ async function refreshCaptureStatus() {
 }
 cancelButton.addEventListener('click', async () => {
   cancelButton.disabled = true;
-  try {await chrome.runtime.sendMessage({type:'CANCEL_CAPTURE'});status.textContent='Aufnahme abgebrochen.';}
+  try {await chrome.runtime.sendMessage({type:'CANCEL_CAPTURE'});status.textContent=t('Aufnahme abgebrochen.');}
   catch(error) {status.className='error';status.textContent=error.message;}
   finally {cancelButton.disabled = false;await refreshCaptureStatus();}
 });

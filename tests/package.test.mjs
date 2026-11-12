@@ -6,9 +6,9 @@ import {dirname,resolve} from 'node:path';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>readFileSync(resolve(root,name),'utf8');
 const manifest=JSON.parse(read('manifest.json'));
-test('MV3 manifest, v1.10.0, valid local entrypoints',()=>{
+test('MV3 manifest, v1.12.0, valid local entrypoints',()=>{
   assert.equal(manifest.manifest_version,3);
-  assert.equal(manifest.version,'1.10.0');
+  assert.equal(manifest.version,'1.12.0');
   for(const name of [manifest.background.service_worker,manifest.action.default_popup,'editor.html','offscreen.html'])assert.ok(existsSync(resolve(root,name)),name);
 });
 test('No external scripts or host-wide permissions',()=>{

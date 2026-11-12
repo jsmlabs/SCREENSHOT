@@ -2,7 +2,7 @@ import {totalCaptureBytes} from './capture-integrity.mjs';
 // Allow only extension-owned UI to issue privileged worker commands.
 export function isTrustedUiSender(sender, runtime) {
   if (!sender || sender.id !== runtime.id || typeof sender.url !== 'string') return false;
-  return sender.url === runtime.getURL('popup.html');
+  return sender.url === runtime.getURL('popup.html') || /^editor\.html(?:\?.*)?$/.test(sender.url.slice(runtime.getURL('').length));
 }
 
 // Offscreen composition is an internal worker-only operation.

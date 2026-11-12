@@ -11,7 +11,7 @@ test('defaults are private, bounded, and optional auto-save starts disabled',()=
  assert.equal(SETTINGS_KEY,'settings:v1');
  assert.equal(normalizeSettings({autoSave:'true',timer:99,historyLimit:1000,historyDays:30}).autoSave,false);
  assert.deepEqual(normalizeSettings({autoSave:'true',timer:99,historyLimit:1000,historyDays:30}),DEFAULT_SETTINGS);
- assert.deepEqual(normalizeSettings({timer:3,autoSave:true,historyLimit:5,historyDays:7}),{timer:3,autoSave:true,historyLimit:5,historyDays:7});
+ assert.deepEqual(normalizeSettings({timer:3,autoSave:true,historyLimit:5,historyDays:7,language:'auto'}),{timer:3,autoSave:true,historyLimit:5,historyDays:7,language:'auto'});
  assert.equal(safeFilename(new Date('2026-11-11T18:00:01Z')),'screenshot-2026-11-11T18-00-01-000Z.png');
 });
 test('local history discards expired, malformed, error and excess records deterministically',()=>{
