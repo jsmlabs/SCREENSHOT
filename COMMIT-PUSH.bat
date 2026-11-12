@@ -91,6 +91,32 @@ if not defined REMOTE_OK (call :fail "Origin does not match github.com/jsmlabs/S
 for /f "delims=" %%B in ('git symbolic-ref --quiet --short HEAD 2^>nul') do set "BRANCH=%%B"
 if not defined BRANCH (call :fail "Detached HEAD: check out a branch before publishing." & goto :end_failure)
 
+rem Refresh GitHub before staging so stale local branches do not publish over newer history.
+call :rule
+echo %BOLD%%BLUE%  00  REMOTE SYNCHRONIZATION%RESET%
+git fetch origin "%BRANCH%"
+if errorlevel 1 (call :fail "Cannot fetch GitHub updates. Publish aborted." & goto :end_failure)
+git rev-parse --verify "origin/%BRANCH%" >nul 2>&1
+if errorlevel 1 (call :fail "Remote branch could not be verified." & goto :end_failure)
+git merge-base --is-ancestor "origin/%BRANCH%" HEAD
+if errorlevel 1 (
+  git merge-base --is-ancestor HEAD "origin/%BRANCH%"
+  if errorlevel 1 (
+    call :fail "Local and remote branches diverged. Resolve commits manually."
+    echo %MUTED%  Inspect: git log --oneline --graph --all -15%RESET%
+    goto :end_failure
+  )
+  echo %YELLOW%  [!] Remote has newer commits. Local working files will be preserved.%RESET%
+  echo %MUTED%  Aligning HEAD and index does not replace local files.%RESET%
+  choice /c YN /n /m "  Synchronize history with origin? [Y/N] "
+  if errorlevel 2 goto :cancel
+  git reset --mixed "origin/%BRANCH%"
+  if errorlevel 1 (call :fail "Could not synchronize local Git history." & goto :end_failure)
+  echo %GREEN%  [OK] Remote history aligned. Existing files preserved.%RESET%
+) else (
+  echo %GREEN%  [OK] Local Git history includes origin.%RESET%
+)
+echo.
 echo %MUTED%  REPOSITORY%RESET%  %WHITE%jsmlabs/SCREENSHOT%RESET%
 echo %MUTED%  BRANCH    %RESET%  %CYAN%%BRANCH%%RESET%
 echo %MUTED%  LOCATION  %RESET%  %HERE%
@@ -104,11 +130,21 @@ if errorlevel 1 (call :fail "Could not read working tree status." & goto :end_fa
 echo.
 git status --porcelain --untracked-files=normal >nul 2>&1
 if errorlevel 1 (call :fail "Could not inspect working tree." & goto :end_failure)
-for /f %%N in ('git status --porcelain --untracked-files=normal ^| find /c /v ""') do set "CHANGE_COUNT=%%N"
-if "%CHANGE_COUNT%"=="0" (
+set "HAS_CHANGES="
+for /f "delims=" %%S in ('git status --porcelain --untracked-files=normal') do set "HAS_CHANGES=1"
+if not defined HAS_CHANGES (
   echo %GREEN%  [OK] No local changes to commit.%RESET%
   echo %MUTED%  You can still publish existing local commits.%RESET%
   goto :push_prompt
+)
+rem Protect repository-critical files from accidental ZIP-sync deletion.
+if not exist ".gitignore" (
+  echo %RED%  [BLOCKED] .gitignore is missing. Run: git restore -- .gitignore%RESET%
+  goto :end_failure
+)
+if not exist "LICENSE" (
+  echo %RED%  [BLOCKED] LICENSE is missing. Run: git restore -- LICENSE%RESET%
+  goto :end_failure
 )
 echo %YELLOW%  [!] Staging all changes with git add -A, including deletions.%RESET%
 choice /c YN /n /m "  Stage and commit these changes? [Y/N] "
@@ -151,6 +187,14 @@ choice /c YN /n /m "  Push now? [Y/N] "
 if errorlevel 2 goto :cancel
 
 echo.
+echo %CYAN%  Refreshing GitHub state before push...%RESET%
+git fetch origin "%BRANCH%"
+if errorlevel 1 (call :fail "Cannot verify remote updates. Push aborted." & goto :end_failure)
+git merge-base --is-ancestor "origin/%BRANCH%" HEAD
+if errorlevel 1 (
+  call :fail "GitHub moved ahead. Push aborted to protect remote commits."
+  goto :end_failure
+)
 echo %CYAN%  Connecting to GitHub...%RESET%
 git push -u origin HEAD
 if errorlevel 1 (
