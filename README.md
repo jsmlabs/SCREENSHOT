@@ -78,6 +78,10 @@ Screenshots are stored as PNG data URLs in `chrome.storage.local`, along with lo
 
 Load the repository root in Chrome or Edge as an unpacked extension. No runtime dependencies or build step are required.
 
+## Updating a Git checkout on Windows
+
+Run `GIT-PULL.bat` from the checkout. It updates the current branch from its configured upstream with a fast-forward only. Switch to `main` first to update the local `main` branch. The script requires Git and a clean working tree, including untracked files. For a ZIP installation, download and extract an updated copy instead.
+
 ## Development and verification
 
 Requires **Node.js 20+** for unit tests; no `npm install` is necessary.
