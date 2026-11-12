@@ -20,7 +20,35 @@ cls
 call :banner
 
 where git >nul 2>&1 || (call :fail "Git is not installed or not available in PATH." & goto :end_failure)
-git rev-parse --is-inside-work-tree >nul 2>&1 || (call :fail "This folder is not a Git working tree. Clone the repository first." & goto :end_failure)
+git rev-parse --is-inside-work-tree >nul 2>&1
+if errorlevel 1 (
+  call :rule
+  echo %BOLD%%YELLOW%  SETUP  /  ZIP OR EXTRACTED FOLDER DETECTED%RESET%
+  echo.
+  echo %MUTED%  This directory has no Git history. Your existing files will be kept.%RESET%
+  echo %MUTED%  Git will connect this folder to the latest origin/main snapshot.%RESET%
+  echo %YELLOW%  [!] Files absent from this folder may appear as deletions.%RESET%
+  echo %YELLOW%  [!] Review the staged summary before committing.%RESET%
+  echo.
+  choice /c YN /n /m "  Connect this folder to jsmlabs/SCREENSHOT? [Y/N] "
+  if errorlevel 2 goto :cancel
+  echo.
+  echo %CYAN%  Initializing local Git metadata...%RESET%
+  git init -q
+  if errorlevel 1 (call :fail "Git initialization failed." & goto :end_failure)
+  git remote add origin https://github.com/jsmlabs/SCREENSHOT.git
+  if errorlevel 1 (call :fail "Could not configure origin remote." & goto :end_failure)
+  echo %CYAN%  Fetching remote history...%RESET%
+  git fetch origin main
+  if errorlevel 1 (call :fail "Fetch failed. Check internet access and authentication." & goto :end_failure)
+  rem --mixed changes HEAD/index only; it does not overwrite or delete working files.
+  git reset --mixed origin/main
+  if errorlevel 1 (call :fail "Could not align local Git index with origin/main." & goto :end_failure)
+  git branch -M main
+  if errorlevel 1 (call :fail "Could not set the local branch to main." & goto :end_failure)
+  echo %GREEN%  [OK] Repository connected. Existing files preserved.%RESET%
+  echo.
+)
 for /f "delims=" %%R in ('git rev-parse --show-toplevel 2^>nul') do set "ROOT=%%R"
 for %%R in ("%ROOT%") do set "ROOT=%%~fR"
 for %%R in ("%CD%") do set "HERE=%%~fR"
