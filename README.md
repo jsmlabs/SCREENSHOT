@@ -311,6 +311,16 @@ Download the **latest** `COMMIT-PUSH.bat` into the project root. Confirm Git is 
 
 </details>
 
+## Repository maintenance
+
+The checked-in browser extension is the source of truth for installable functionality. The current version remains **1.10.0** until a complete, reviewed implementation is committed; previously prepared 1.11.0/1.12.0 snapshots are not present in this branch.
+
+- Runtime source, assets and regression tests remain at their existing paths.
+- Superseded development reports live in [docs/archive](docs/archive/); they document historical work and do not describe the current release.
+- Local screenshot exports and generated packages are excluded from Git. Keep user captures outside the repository or in an ignored `screenshots/` directory.
+- The project has no npm manifest or third-party runtime dependency to upgrade. Do not add an npm build pipeline solely to make a version update.
+- The automated checks and real Chrome/Edge acceptance gates below remain prerequisites for an actual new release.
+
 ## Release status and documentation
 
 The **GitHub `main` source tree** currently identifies itself as **v1.10.0** in `manifest.json` and the popup. The separately prepared **v1.12.0** snapshot is **not** yet merged into this branch. The current development documentation explicitly marks the real-browser release gate as **pending**; do not interpret the version badge as a published or fully end-to-end-tested Chrome Web Store release.
@@ -320,8 +330,8 @@ The **GitHub `main` source tree** currently identifies itself as **v1.10.0** in 
 | [Consumer release 1.10.0](CONSUMER-RELEASE-1.10.0.md) | Published source's UI polish scope and release prerequisites |
 | [Testing](TESTING.md) | Automated evidence, historical checklists, and open acceptance items |
 | [Phase 06 release report](PHASE-06-RELEASE-REPORT.md) | Security/performance review and release HOLD decision |
-| [Release candidate notes](RELEASE-CANDIDATE.md) | Earlier release-candidate technical context |
-| [UI repair report](UI-REPAIR-REPORT-v1.9.1.md) | Prior UI repair details |
+| [Historical release candidate notes](docs/archive/RELEASE-CANDIDATE.md) | Earlier release-candidate technical context |
+| [Historical UI repair report](docs/archive/UI-REPAIR-REPORT-v1.9.1.md) | Prior UI repair details |
 
 ## License
 
